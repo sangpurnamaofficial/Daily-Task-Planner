@@ -1699,7 +1699,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let authMode = 'login'; // 'login' | 'signup'
 
-  // ================= UTILITI AUDIO, HAPTIK & TOAST =================
+  // ================= ELEMEN DOM HAMBURGER & DRAWER MENU =================
+  const headerBrandTitle = document.getElementById('header-brand-title');
+  const btnHamburger = document.getElementById('btn-hamburger');
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  const drawerContent = document.getElementById('drawer-content');
+  const btnCloseDrawer = document.getElementById('btn-close-drawer');
+  const drawerUserCard = document.getElementById('drawer-user-card');
+  const drawerUserAvatar = document.getElementById('drawer-user-avatar');
+  const drawerUserName = document.getElementById('drawer-user-name');
+  const drawerUserEmail = document.getElementById('drawer-user-email');
+  const drawerUserBadge = document.getElementById('drawer-user-badge');
+  const drawerLangMs = document.getElementById('drawer-lang-ms');
+  const drawerLangEn = document.getElementById('drawer-lang-en');
+  const drawerNavBtns = document.querySelectorAll('.drawer-nav-btn');
+  const desktopNavItems = document.querySelectorAll('.desktop-nav-item');
+  const drawerBtnAutoSchedule = document.getElementById('drawer-btn-auto-schedule');
+  const drawerBtnSettings = document.getElementById('drawer-btn-settings');
+  const drawerBtnExport = document.getElementById('drawer-btn-export');
+  const drawerBtnImport = document.getElementById('drawer-btn-import');
+  const drawerBtnReset = document.getElementById('drawer-btn-reset');
+  const btnDrawerAuth = document.getElementById('btn-drawer-auth');
+  const txtDrawerAuthBtn = document.getElementById('txt-drawer-auth-btn');
+
+  function openDrawer() {
+    if (drawerOverlay) drawerOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    triggerHaptic([20]);
+  }
+
+  function closeDrawer() {
+    if (drawerOverlay) drawerOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
   function playAudioChime(type = 'success') {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1843,34 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ================= INISIALISASI =================
-  function initApp() {
-    updateLanguagePills();
-    updateStaticTranslations();
-    renderCurrentDate();
-    loadSettingsIntoUI();
-    bindEvents();
-    bindTimerEvents();
-    bindSwipeToDismiss();
-    renderAll();
 
-    // Kemas kini automatik setiap 60 saat untuk status tugasan aktif semasa
-    setInterval(() => {
-      renderDashboard();
-      renderTasksList();
-    }, 60000);
-
-    // Inisialisasi Cloud Database Sync
-    if (window.Storage && window.Storage.initCloudSync) {
-      window.Storage.onSync(() => {
-        tasks = window.Storage.getTasks();
-        goals = window.Storage.getGoals();
-        settings = window.Storage.getSettings();
-        renderAll();
-      });
-      window.Storage.initCloudSync();
-    }
-  }
 
   function renderCurrentDate() {
     if (window.I18N) {
@@ -1896,6 +1902,10 @@ document.addEventListener('DOMContentLoaded', () => {
       langOptMs.classList.toggle('active', lang === 'ms');
       langOptEn.classList.toggle('active', lang === 'en');
     }
+    if (drawerLangMs && drawerLangEn) {
+      drawerLangMs.classList.toggle('active', lang === 'ms');
+      drawerLangEn.classList.toggle('active', lang === 'en');
+    }
     if (settingLanguage) {
       settingLanguage.value = lang;
     }
@@ -1905,25 +1915,88 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateStaticTranslations() {
     if (!window.I18N) return;
     const t = (k) => window.I18N.t(k);
+    const isEn = window.I18N.getLanguage() === 'en';
 
-    // Navigasi Bawah
-    document.querySelector('#nav-dashboard span').textContent = t('navDashboard');
-    document.querySelector('#nav-tasks span').textContent = t('navTasks');
-    document.querySelector('#nav-goals span').textContent = t('navGoals');
-    document.querySelector('#nav-timeline span').textContent = t('navTimeline');
-    document.querySelector('#nav-analytics span').textContent = t('navAnalytics');
+    // Navigasi Bawah (Mobile)
+    const navD = document.querySelector('#nav-dashboard span');
+    const navT = document.querySelector('#nav-tasks span');
+    const navG = document.querySelector('#nav-goals span');
+    const navTl = document.querySelector('#nav-timeline span');
+    const navA = document.querySelector('#nav-analytics span');
+    if (navD) navD.textContent = t('navDashboard');
+    if (navT) navT.textContent = t('navTasks');
+    if (navG) navG.textContent = t('navGoals');
+    if (navTl) navTl.textContent = t('navTimeline');
+    if (navA) navA.textContent = t('navAnalytics');
+
+    // Navigasi Atas (Desktop)
+    const txtDnavDashboard = document.getElementById('txt-dnav-dashboard');
+    const txtDnavTasks = document.getElementById('txt-dnav-tasks');
+    const txtDnavGoals = document.getElementById('txt-dnav-goals');
+    const txtDnavTimeline = document.getElementById('txt-dnav-timeline');
+    const txtDnavAnalytics = document.getElementById('txt-dnav-analytics');
+    if (txtDnavDashboard) txtDnavDashboard.textContent = t('navDashboard');
+    if (txtDnavTasks) txtDnavTasks.textContent = t('navTasks');
+    if (txtDnavGoals) txtDnavGoals.textContent = t('navGoals');
+    if (txtDnavTimeline) txtDnavTimeline.textContent = t('navTimeline');
+    if (txtDnavAnalytics) txtDnavAnalytics.textContent = t('navAnalytics');
+
+    // Menu Drawer Terjemahan
+    const txtDrawerLangTitle = document.getElementById('txt-drawer-lang-title');
+    const txtDrawerNavTitle = document.getElementById('txt-drawer-nav-title');
+    const dmenuDashboard = document.getElementById('dmenu-dashboard');
+    const dmenuTasks = document.getElementById('dmenu-tasks');
+    const dmenuGoals = document.getElementById('dmenu-goals');
+    const dmenuTimeline = document.getElementById('dmenu-timeline');
+    const dmenuAnalytics = document.getElementById('dmenu-analytics');
+    const txtDrawerToolsTitle = document.getElementById('txt-drawer-tools-title');
+    const txtDrawerAutoSched = document.getElementById('txt-drawer-auto-sched');
+    const txtDrawerAutoSchedSub = document.getElementById('txt-drawer-auto-sched-sub');
+    const txtDrawerSettings = document.getElementById('txt-drawer-settings');
+    const txtDrawerSettingsSub = document.getElementById('txt-drawer-settings-sub');
+    const txtDrawerDataTitle = document.getElementById('txt-drawer-data-title');
+    const txtDrawerExport = document.getElementById('txt-drawer-export');
+    const txtDrawerImport = document.getElementById('txt-drawer-import');
+    const txtDrawerReset = document.getElementById('txt-drawer-reset');
+
+    if (txtDrawerLangTitle) txtDrawerLangTitle.textContent = isEn ? 'Language' : 'Bahasa / Language';
+    if (txtDrawerNavTitle) txtDrawerNavTitle.textContent = isEn ? 'Pages & Navigation' : 'Halaman & Navigasi';
+    if (dmenuDashboard) dmenuDashboard.textContent = isEn ? 'Dashboard Overview' : 'Ringkasan Utama';
+    if (dmenuTasks) dmenuTasks.textContent = isEn ? 'Tasks List' : 'Senarai Tugasan';
+    if (dmenuGoals) dmenuGoals.textContent = isEn ? 'Daily Goals' : 'Matlamat Harian';
+    if (dmenuTimeline) dmenuTimeline.textContent = isEn ? 'Timeline Blocks' : 'Blok Garis Masa';
+    if (dmenuAnalytics) dmenuAnalytics.textContent = isEn ? 'Analytics & Performance' : 'Analisis & Prestasi';
+    if (txtDrawerToolsTitle) txtDrawerToolsTitle.textContent = isEn ? 'Tools & Settings' : 'Alat & Tetapan';
+    if (txtDrawerAutoSched) txtDrawerAutoSched.textContent = isEn ? 'Smart Auto-Cascade' : 'Auto-Susun Jadual Pintar';
+    if (txtDrawerAutoSchedSub) txtDrawerAutoSchedSub.textContent = isEn ? 'Eliminate overlaps automatically' : 'Hapuskan pertindihan masa secara berturutan';
+    if (txtDrawerSettings) txtDrawerSettings.textContent = isEn ? 'Daily Time Budget' : 'Tetapan Waktu Harian';
+    if (txtDrawerSettingsSub) txtDrawerSettingsSub.textContent = isEn ? 'Wake, sleep & buffer times' : 'Waktu bangun, tidur & masa rehat';
+    if (txtDrawerDataTitle) txtDrawerDataTitle.textContent = isEn ? 'Data Management' : 'Pengurusan Data';
+    if (txtDrawerExport) txtDrawerExport.textContent = isEn ? 'Export' : 'Eksport';
+    if (txtDrawerImport) txtDrawerImport.textContent = isEn ? 'Import' : 'Import';
+    if (txtDrawerReset) txtDrawerReset.textContent = isEn ? 'Restore Demo' : 'Pulih Demo';
 
     // Dashboard
-    document.querySelector('#daily-budget-card .budget-title').textContent = t('dailyCapacityTitle');
-    document.querySelectorAll('.stat-box')[0].querySelector('.stat-label').textContent = t('statTasks');
-    document.querySelectorAll('.stat-box')[1].querySelector('.stat-label').textContent = t('statGoals');
-    document.querySelectorAll('.stat-box')[2].querySelector('.stat-label').textContent = t('statFreeTime');
-    document.getElementById('btn-jump-tasks').textContent = t('viewAll');
-    document.getElementById('btn-jump-goals').textContent = t('manageGoals');
+    const bTitle = document.querySelector('#daily-budget-card .budget-title');
+    if (bTitle) bTitle.textContent = t('dailyCapacityTitle');
+    const statBoxes = document.querySelectorAll('.stat-box');
+    if (statBoxes.length >= 3) {
+      const s0 = statBoxes[0].querySelector('.stat-label');
+      const s1 = statBoxes[1].querySelector('.stat-label');
+      const s2 = statBoxes[2].querySelector('.stat-label');
+      if (s0) s0.textContent = t('statTasks');
+      if (s1) s1.textContent = t('statGoals');
+      if (s2) s2.textContent = t('statFreeTime');
+    }
+    const btnJTasks = document.getElementById('btn-jump-tasks');
+    const btnJGoals = document.getElementById('btn-jump-goals');
+    if (btnJTasks) btnJTasks.textContent = t('viewAll');
+    if (btnJGoals) btnJGoals.textContent = t('manageGoals');
 
     // Tugasan
-    document.querySelector('#tab-tasks .section-title').textContent = t('taskListTitle');
-    btnTaskAutoCascade.textContent = t('btnAutoCascade');
+    const tasksSecTitle = document.querySelector('#tab-tasks .section-title');
+    if (tasksSecTitle) tasksSecTitle.textContent = t('taskListTitle');
+    if (btnTaskAutoCascade) btnTaskAutoCascade.textContent = t('btnAutoCascade');
 
     // Filter pills
     const pillKeys = ['filterAll', 'filterWork', 'filterStudy', 'filterHealth', 'filterPersonal', 'filterPending'];
@@ -1934,23 +2007,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Matlamat
-    document.querySelector('#tab-goals .section-title').textContent = t('goalsTitle');
-    document.querySelector('#tab-goals p').textContent = t('goalsSubtitle');
-    btnAddGoalTop.textContent = t('addGoalBtn');
+    const goalsSecTitle = document.querySelector('#tab-goals .section-title');
+    const goalsSub = document.querySelector('#tab-goals p');
+    if (goalsSecTitle) goalsSecTitle.textContent = t('goalsTitle');
+    if (goalsSub) goalsSub.textContent = t('goalsSubtitle');
+    if (btnAddGoalTop) btnAddGoalTop.textContent = t('addGoalBtn');
 
     // Timeline
-    document.querySelector('#tab-timeline .section-title').textContent = t('timelineTitle');
-    document.querySelector('#tab-timeline span').textContent = t('timelineSubtitle');
+    const timelineSecTitle = document.querySelector('#tab-timeline .section-title');
+    const timelineSub = document.querySelector('#tab-timeline span');
+    if (timelineSecTitle) timelineSecTitle.textContent = t('timelineTitle');
+    if (timelineSub) timelineSub.textContent = t('timelineSubtitle');
 
     // Analisis
-    document.querySelector('#tab-analytics .section-title').textContent = t('analyticsTitle');
-    btnCopyAgenda.textContent = t('copyText');
-    btnExportData.textContent = t('exportBackup');
-    btnImportTrigger.textContent = t('importData');
-    btnResetDemo.textContent = t('restoreDemo');
+    const analyticsSecTitle = document.querySelector('#tab-analytics .section-title');
+    if (analyticsSecTitle) analyticsSecTitle.textContent = t('analyticsTitle');
+    if (btnCopyAgenda) btnCopyAgenda.textContent = t('copyText');
+    if (btnExportData) btnExportData.textContent = t('exportBackup');
+    if (btnImportTrigger) btnImportTrigger.textContent = t('importData');
+    if (btnResetDemo) btnResetDemo.textContent = t('restoreDemo');
 
     // Timer modal
-    btnTimerMarkDone.textContent = t('finishAndSaveSession');
+    if (btnTimerMarkDone) btnTimerMarkDone.textContent = t('finishAndSaveSession');
 
     // Update live calculation box label
     const calcBoxLabel = document.querySelector('#calc-result-container .calc-text');
@@ -2526,8 +2604,115 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalAuth) closeAuthModal();
         if (modalTimer) modalTimer.classList.remove('active');
         if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+        closeDrawer();
       }
     });
+
+    // ================= EVENT LISTENERS HAMBURGER & DRAWER MENU =================
+    if (btnHamburger) {
+      btnHamburger.addEventListener('click', openDrawer);
+    }
+    if (btnCloseDrawer) {
+      btnCloseDrawer.addEventListener('click', closeDrawer);
+    }
+    if (drawerOverlay) {
+      drawerOverlay.addEventListener('click', (e) => {
+        if (e.target === drawerOverlay) closeDrawer();
+      });
+    }
+
+    // Penukar Bahasa Drawer
+    if (drawerLangMs) {
+      drawerLangMs.addEventListener('click', () => switchLanguage('ms'));
+    }
+    if (drawerLangEn) {
+      drawerLangEn.addEventListener('click', () => switchLanguage('en'));
+    }
+
+    // Navigasi Desktop
+    desktopNavItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const targetTab = item.dataset.tab;
+        switchTab(targetTab);
+      });
+    });
+
+    // Butang Navigasi Drawer
+    drawerNavBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.drawerTab;
+        switchTab(targetTab);
+        closeDrawer();
+      });
+    });
+
+    // Kad Profil Drawer (Buka modal login jika tetamu)
+    if (drawerUserCard) {
+      drawerUserCard.addEventListener('click', () => {
+        closeDrawer();
+        if (!window.Storage.isAuthenticated()) {
+          openAuthModal('login');
+        }
+      });
+    }
+
+    // Alat Produktiviti Drawer
+    if (drawerBtnAutoSchedule) {
+      drawerBtnAutoSchedule.addEventListener('click', () => {
+        closeDrawer();
+        handleAutoCascade();
+        const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+        showToast(isEn ? 'Schedule auto-arranged! ⚡' : 'Jadual disusun secara berturutan! ⚡', 'success');
+        playAudioChime('success');
+      });
+    }
+
+    if (drawerBtnSettings) {
+      drawerBtnSettings.addEventListener('click', () => {
+        closeDrawer();
+        modalSettings.classList.add('active');
+      });
+    }
+
+    // Pengurusan Data Drawer
+    if (drawerBtnExport) {
+      drawerBtnExport.addEventListener('click', () => {
+        closeDrawer();
+        window.Storage.exportDataJSON();
+        showToast('Fail sandaran data JSON dimuat turun! 💾', 'success');
+        playAudioChime('success');
+      });
+    }
+
+    if (drawerBtnImport) {
+      drawerBtnImport.addEventListener('click', () => {
+        closeDrawer();
+        fileImportInput.click();
+      });
+    }
+
+    if (drawerBtnReset) {
+      drawerBtnReset.addEventListener('click', () => {
+        closeDrawer();
+        const t = (k) => window.I18N ? window.I18N.t(k) : k;
+        if (confirm(t('confirmResetDemo'))) {
+          window.Storage.resetToDefaults();
+          renderAll();
+        }
+      });
+    }
+
+    // Butang Auth Drawer (Log Masuk / Keluar)
+    if (btnDrawerAuth) {
+      btnDrawerAuth.addEventListener('click', () => {
+        closeDrawer();
+        if (window.Storage.isAuthenticated()) {
+          handleLogout();
+        } else {
+          openAuthModal('login');
+        }
+      });
+    }
 
     // ================= EVENT LISTENERS AUTH =================
     if (btnOpenAuth) {
@@ -2728,11 +2913,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Tukar Tab Navigasi
+  // Tukar Tab Navigasi (Diselaraskan untuk Mobile Bottom Nav, Desktop Top Nav & Drawer)
   function switchTab(tabId) {
     currentTab = tabId;
     navItems.forEach(item => {
       item.classList.toggle('active', item.dataset.tab === tabId);
+    });
+    desktopNavItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.tab === tabId);
+    });
+    drawerNavBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.drawerTab === tabId);
     });
     tabPanes.forEach(pane => {
       pane.classList.toggle('active', pane.id === tabId);
@@ -3041,9 +3232,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ================= PENGURUSAN PENGESAHAN & PROFIL (AUTH) =================
   function updateAuthUI(user) {
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
     const t = (k) => window.I18N ? window.I18N.t(k) : k;
+
     if (user) {
-      const firstName = (user.name || 'User').split(' ')[0];
+      const fullName = user.name || 'User';
+      const firstName = fullName.split(' ')[0];
+      const greetingPrefix = isEn ? 'Hello, ' : 'Hai, ';
+
+      // Menu Atas: Paparkan "Hello, [Nama] 👋" selepas login
+      if (headerBrandTitle) {
+        headerBrandTitle.textContent = `${greetingPrefix}${firstName} 👋`;
+      }
       if (headerUserName) headerUserName.textContent = firstName;
       if (headerUserAvatar) {
         if (user.avatar) {
@@ -3052,14 +3252,57 @@ document.addEventListener('DOMContentLoaded', () => {
           headerUserAvatar.textContent = firstName.charAt(0).toUpperCase();
         }
       }
+
+      // Drawer Kad Profil Pengguna
+      if (drawerUserName) drawerUserName.textContent = `${greetingPrefix}${firstName} 👋`;
+      if (drawerUserEmail) drawerUserEmail.textContent = user.email || '';
+      if (drawerUserAvatar) {
+        if (user.avatar) {
+          drawerUserAvatar.innerHTML = `<img src="${escapeHtml(user.avatar)}" alt="${escapeHtml(user.name)}" onerror="this.parentElement.textContent='${escapeHtml(firstName.charAt(0).toUpperCase())}'">`;
+        } else {
+          drawerUserAvatar.textContent = firstName.charAt(0).toUpperCase();
+        }
+      }
+      if (drawerUserBadge) {
+        drawerUserBadge.style.display = 'inline-block';
+        drawerUserBadge.textContent = user.provider === 'google' ? 'Google Account' : 'Cloud Sync';
+      }
+
+      // Butang Tindakan Drawer menjadi "Log Keluar"
+      if (txtDrawerAuthBtn) txtDrawerAuthBtn.textContent = isEn ? 'Sign Out' : 'Log Keluar';
+      if (btnDrawerAuth) {
+        btnDrawerAuth.classList.add('logout-state');
+      }
+
       if (dropdownUserName) dropdownUserName.textContent = user.name || 'Pengguna';
       if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
-      if (btnOpenAuth) btnOpenAuth.title = `${t('profileMenu')}: ${user.name}`;
+      if (btnOpenAuth) btnOpenAuth.title = `${t('profileMenu') || 'Profil'}: ${user.name}`;
     } else {
+      // Status Tetamu (Guest / Not Logged In)
+      if (headerBrandTitle) {
+        headerBrandTitle.textContent = 'DailyPulse';
+      }
       if (headerUserName) headerUserName.textContent = t('loginTab') || 'Masuk';
       if (headerUserAvatar) {
         headerUserAvatar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
       }
+
+      // Drawer Kad Profil Tetamu
+      if (drawerUserName) drawerUserName.textContent = 'DailyPulse Guest';
+      if (drawerUserEmail) drawerUserEmail.textContent = isEn ? 'Not logged in (Local data)' : 'Belum log masuk (Data setempat)';
+      if (drawerUserAvatar) {
+        drawerUserAvatar.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+      }
+      if (drawerUserBadge) {
+        drawerUserBadge.style.display = 'none';
+      }
+
+      // Butang Tindakan Drawer menjadi "Log Masuk / Daftar"
+      if (txtDrawerAuthBtn) txtDrawerAuthBtn.textContent = isEn ? 'Sign In / Sign Up' : 'Log Masuk / Daftar';
+      if (btnDrawerAuth) {
+        btnDrawerAuth.classList.remove('logout-state');
+      }
+
       if (btnOpenAuth) btnOpenAuth.title = t('authModalTitleLogin') || 'Log Masuk / Profil';
       if (userDropdownMenu) userDropdownMenu.style.display = 'none';
     }

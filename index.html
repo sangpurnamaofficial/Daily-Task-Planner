@@ -1709,6 +1709,543 @@ body::before {
   margin-top: 14px;
 }
 
+/* ==========================================================================
+   HAMBURGER BUTTON & SLIDE-OUT DRAWER MENU
+   ========================================================================== */
+
+.hamburger-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  color: var(--text-main);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.hamburger-btn:active {
+  transform: scale(0.95);
+}
+
+.hamburger-line {
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all 0.25s ease;
+}
+
+/* Drawer Overlay */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1200;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Drawer Content Pane */
+.drawer-content {
+  width: 100%;
+  max-width: 360px;
+  height: 100%;
+  background: #090e1a;
+  border-left: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.65);
+  overflow-y: auto;
+}
+
+.drawer-overlay.active .drawer-content {
+  transform: translateX(0);
+}
+
+/* Drawer Header */
+.drawer-header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(15, 23, 42, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.drawer-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 0 16px var(--primary-glow);
+}
+
+.drawer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-user-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.drawer-user-greeting {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.drawer-user-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-top: 4px;
+}
+
+.drawer-close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.drawer-close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Drawer Body */
+.drawer-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+/* Drawer Language Row */
+.drawer-lang-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.drawer-lang-btn {
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: center;
+}
+
+.drawer-lang-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}
+
+/* Drawer Navigation List */
+.drawer-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawer-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.drawer-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.drawer-nav-btn.active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #a5b4fc;
+}
+
+.drawer-nav-icon {
+  font-size: 1.1rem;
+}
+
+/* Drawer Action Buttons */
+.drawer-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.drawer-action-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--primary);
+}
+
+.drawer-action-icon {
+  font-size: 1.25rem;
+}
+
+.drawer-action-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.drawer-action-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Drawer Grid Buttons */
+.drawer-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.drawer-grid-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.drawer-grid-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Drawer Footer */
+.drawer-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-glass);
+  background: rgba(15, 23, 42, 0.8);
+  position: sticky;
+  bottom: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.drawer-auth-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.drawer-auth-btn:hover {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
+}
+
+.drawer-auth-btn.btn-logout-state {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.drawer-auth-btn.btn-logout-state:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fff;
+}
+
+/* ==========================================================================
+   DUAL INTERFACE ARCHITECTURE: DESKTOP VS MOBILE
+   ========================================================================== */
+
+.desktop-nav {
+  display: none;
+}
+
+.desktop-actions {
+  display: none;
+}
+
+/* Mobile Specifics (<= 899px) */
+@media (max-width: 899px) {
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  .desktop-actions {
+    display: none !important;
+  }
+
+  .header-actions .lang-toggle-btn,
+  .header-actions .auth-header-wrapper,
+  .header-actions .icon-btn {
+    display: none !important;
+  }
+
+  .header-actions {
+    gap: 0;
+  }
+
+  .brand-info h1 {
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+  }
+
+  .bottom-nav {
+    display: flex !important;
+  }
+
+  .drawer-nav-section {
+    display: flex;
+  }
+}
+
+/* Desktop Widescreen Specifics (>= 900px) */
+@media (min-width: 900px) {
+  :root {
+    --app-max-width: 1200px;
+  }
+
+  .app-container {
+    max-width: var(--app-max-width);
+    border-left: 1px solid var(--border-glass);
+    border-right: 1px solid var(--border-glass);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+    padding-bottom: 50px;
+    margin: 0 auto;
+  }
+
+  .app-header {
+    padding: 16px 36px;
+    gap: 20px;
+  }
+
+  .brand-info h1 {
+    font-size: 1.2rem;
+  }
+
+  /* Desktop Navigation in Top Header */
+  .desktop-nav {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--border-glass);
+    padding: 4px 6px;
+    border-radius: var(--radius-full);
+  }
+
+  .desktop-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .desktop-nav-item:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .desktop-nav-item.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 10px var(--primary-glow);
+  }
+
+  /* Hide Mobile Bottom Nav on Desktop */
+  .bottom-nav {
+    display: none !important;
+  }
+
+  /* Hide redundant nav links inside drawer on desktop */
+  .drawer-nav-section {
+    display: none;
+  }
+
+  /* Desktop Action Bar */
+  .desktop-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Dashboard 2-Column Grid on Desktop */
+  .dashboard-grid {
+    display: grid !important;
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .filter-bar {
+    gap: 10px;
+  }
+
+  .tasks-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .goals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+
 
 
   </style>
@@ -1723,51 +2260,86 @@ body::before {
       <div class="brand-section">
         <div class="brand-icon">⚡</div>
         <div class="brand-info">
-          <h1>DailyPulse</h1>
+          <h1 id="header-brand-title">DailyPulse</h1>
           <div class="date-pill" id="current-date-display">Isnin, 7 September</div>
         </div>
       </div>
-      <div class="header-actions">
-        <!-- Language Switcher Pill -->
-        <div class="lang-toggle-btn" id="lang-toggle" title="Tukar Bahasa / Switch Language">
-          <span class="lang-opt active" id="lang-opt-ms">BM</span>
-          <span class="lang-opt" id="lang-opt-en">EN</span>
-        </div>
 
-        <!-- Profil Pengguna / Butang Log Masuk -->
-        <div class="auth-header-wrapper" id="auth-header-wrapper">
-          <button class="auth-pill-btn" id="btn-open-auth" title="Log Masuk / Profil Pengguna" aria-label="Akaun Pengguna">
-            <div class="auth-avatar" id="header-user-avatar">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-            <span class="auth-pill-name" id="header-user-name">Masuk</span>
-          </button>
-          <!-- Menu Turun Pengguna (Dropdown) -->
-          <div class="user-dropdown-menu" id="user-dropdown-menu" style="display: none;">
-            <div class="user-dropdown-header">
-              <div class="user-dropdown-name" id="dropdown-user-name">Pengguna</div>
-              <div class="user-dropdown-email" id="dropdown-user-email">user@example.com</div>
-            </div>
-            <div class="dropdown-divider"></div>
-            <button class="dropdown-item" id="btn-dropdown-logout">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              <span id="txt-dropdown-logout">Log Keluar</span>
-            </button>
-          </div>
-        </div>
-
-        <button class="icon-btn" id="btn-auto-schedule" title="Auto-Susun Jadual Pintar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
+      <!-- Desktop Navigation Bar (Hanya Muncul di Desktop / PC) -->
+      <nav class="desktop-nav" id="desktop-nav">
+        <button class="desktop-nav-item active" data-tab="tab-dashboard" id="dnav-dashboard">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span id="txt-dnav-dashboard">Ringkasan</span>
         </button>
-        <button class="icon-btn" id="btn-open-settings" title="Tetapan Masa">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
+        <button class="desktop-nav-item" data-tab="tab-tasks" id="dnav-tasks">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span id="txt-dnav-tasks">Tugasan</span>
+        </button>
+        <button class="desktop-nav-item" data-tab="tab-goals" id="dnav-goals">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span id="txt-dnav-goals">Matlamat</span>
+        </button>
+        <button class="desktop-nav-item" data-tab="tab-timeline" id="dnav-timeline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="18" y1="20" x2="18" y2="8"/></svg>
+          <span id="txt-dnav-timeline">Garis Masa</span>
+        </button>
+        <button class="desktop-nav-item" data-tab="tab-analytics" id="dnav-analytics">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          <span id="txt-dnav-analytics">Analisis</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Desktop Action Buttons (Hanya Dipaparkan di Desktop) -->
+        <div class="desktop-actions">
+          <!-- Language Switcher Pill -->
+          <div class="lang-toggle-btn" id="lang-toggle" title="Tukar Bahasa / Switch Language">
+            <span class="lang-opt active" id="lang-opt-ms">BM</span>
+            <span class="lang-opt" id="lang-opt-en">EN</span>
+          </div>
+
+          <!-- Profil Pengguna / Butang Log Masuk -->
+          <div class="auth-header-wrapper" id="auth-header-wrapper">
+            <button class="auth-pill-btn" id="btn-open-auth" title="Log Masuk / Profil Pengguna" aria-label="Akaun Pengguna">
+              <div class="auth-avatar" id="header-user-avatar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <span class="auth-pill-name" id="header-user-name">Masuk</span>
+            </button>
+            <!-- Menu Turun Pengguna (Dropdown) -->
+            <div class="user-dropdown-menu" id="user-dropdown-menu" style="display: none;">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name" id="dropdown-user-name">Pengguna</div>
+                <div class="user-dropdown-email" id="dropdown-user-email">user@example.com</div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" id="btn-dropdown-logout">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span id="txt-dropdown-logout">Log Keluar</span>
+              </button>
+            </div>
+          </div>
+
+          <button class="icon-btn" id="btn-auto-schedule" title="Auto-Susun Jadual Pintar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </button>
+          <button class="icon-btn" id="btn-open-settings" title="Tetapan Masa">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Butang Hamburger Menu Utama (Mobile & Desktop Drawer Trigger) -->
+        <button class="hamburger-btn" id="btn-hamburger" title="Buka Menu" aria-label="Menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
         </button>
       </div>
     </header>
@@ -1777,64 +2349,70 @@ body::before {
 
       <!-- ================= TAB 1: DASHBOARD / RINGKASAN ================= -->
       <section id="tab-dashboard" class="tab-pane active">
-        <!-- Daily Time Budget Gauge -->
-        <div class="glass-card budget-card" id="daily-budget-card">
-          <div class="budget-meta">
-            <div>
-              <div class="budget-title">Kapasiti Masa Harian</div>
-              <div class="budget-val" id="budget-planned-val">0j 0m</div>
+        <div class="dashboard-grid">
+          <div class="dashboard-col-left">
+            <!-- Daily Time Budget Gauge -->
+            <div class="glass-card budget-card" id="daily-budget-card">
+              <div class="budget-meta">
+                <div>
+                  <div class="budget-title">Kapasiti Masa Harian</div>
+                  <div class="budget-val" id="budget-planned-val">0j 0m</div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="budget-sub" id="budget-capacity-sub">Daripada 15j 30m berjaga</div>
+                  <div id="budget-status-pill" class="badge badge-duration" style="margin-top: 4px;">Optimum</div>
+                </div>
+              </div>
+
+              <div class="progress-track">
+                <div class="progress-fill" id="budget-progress-fill" style="width: 0%;"></div>
+              </div>
+
+              <div class="budget-stats-grid">
+                <div class="stat-box">
+                  <span class="stat-label">Tugasan</span>
+                  <span class="stat-value" id="stat-task-time">0j 0m</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Matlamat</span>
+                  <span class="stat-value" id="stat-goal-time">0j 0m</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Baki Terluang</span>
+                  <span class="stat-value" id="stat-free-time">0j 0m</span>
+                </div>
+              </div>
             </div>
-            <div style="text-align: right;">
-              <div class="budget-sub" id="budget-capacity-sub">Daripada 15j 30m berjaga</div>
-              <div id="budget-status-pill" class="badge badge-duration" style="margin-top: 4px;">Optimum</div>
+
+            <!-- Banner Amaran Overlap (Jika ada) -->
+            <div id="overlap-alert-container"></div>
+
+            <!-- Kad Tugasan Seterusnya (Next Up Action) -->
+            <div class="section-header">
+              <h2 class="section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Fokus Seterusnya
+              </h2>
+              <button class="section-action" id="btn-jump-tasks">Lihat Semua</button>
+            </div>
+            <div id="next-task-container">
+              <!-- Diisi melalui JS -->
             </div>
           </div>
 
-          <div class="progress-track">
-            <div class="progress-fill" id="budget-progress-fill" style="width: 0%;"></div>
-          </div>
-
-          <div class="budget-stats-grid">
-            <div class="stat-box">
-              <span class="stat-label">Tugasan</span>
-              <span class="stat-value" id="stat-task-time">0j 0m</span>
+          <div class="dashboard-col-right">
+            <!-- Ringkasan Matlamat Harian -->
+            <div class="section-header">
+              <h2 class="section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Kemajuan Matlamat Harian
+              </h2>
+              <button class="section-action" id="btn-jump-goals">Urus Matlamat</button>
             </div>
-            <div class="stat-box">
-              <span class="stat-label">Matlamat</span>
-              <span class="stat-value" id="stat-goal-time">0j 0m</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-label">Baki Terluang</span>
-              <span class="stat-value" id="stat-free-time">0j 0m</span>
+            <div id="dashboard-goals-list">
+              <!-- Diisi melalui JS -->
             </div>
           </div>
-        </div>
-
-        <!-- Banner Amaran Overlap (Jika ada) -->
-        <div id="overlap-alert-container"></div>
-
-        <!-- Kad Tugasan Seterusnya (Next Up Action) -->
-        <div class="section-header">
-          <h2 class="section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            Fokus Seterusnya
-          </h2>
-          <button class="section-action" id="btn-jump-tasks">Lihat Semua</button>
-        </div>
-        <div id="next-task-container">
-          <!-- Diisi melalui JS -->
-        </div>
-
-        <!-- Ringkasan Matlamat Harian -->
-        <div class="section-header" style="margin-top: 20px;">
-          <h2 class="section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            Kemajuan Matlamat Harian
-          </h2>
-          <button class="section-action" id="btn-jump-goals">Urus Matlamat</button>
-        </div>
-        <div id="dashboard-goals-list">
-          <!-- Diisi melalui JS -->
         </div>
       </section>
 
@@ -2318,8 +2896,112 @@ body::before {
     </button>
   </div>
 
+  <!-- ================= HAMBURGER DRAWER MENU ================= -->
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer-content" id="drawer-content">
+      <!-- Drawer Header with User Card -->
+      <div class="drawer-header">
+        <div class="drawer-user-card" id="drawer-user-card">
+          <div class="drawer-avatar" id="drawer-user-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="drawer-user-meta">
+            <div class="drawer-user-greeting" id="drawer-user-name">DailyPulse Guest</div>
+            <div class="drawer-user-email" id="drawer-user-email">Belum log masuk</div>
+            <div class="drawer-user-badge" id="drawer-user-badge" style="display: none;">Google Account</div>
+          </div>
+        </div>
+        <button type="button" class="drawer-close-btn" id="btn-close-drawer" aria-label="Tutup Menu" title="Tutup">✕</button>
+      </div>
 
-    <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
+      <!-- Drawer Body -->
+      <div class="drawer-body">
+        <!-- Section: Language Switcher -->
+        <div class="drawer-section">
+          <div class="drawer-section-title" id="txt-drawer-lang-title">Bahasa / Language</div>
+          <div class="drawer-lang-row">
+            <button type="button" class="drawer-lang-btn active" id="drawer-lang-ms">🇲🇾 Bahasa Melayu</button>
+            <button type="button" class="drawer-lang-btn" id="drawer-lang-en">🇬🇧 English</button>
+          </div>
+        </div>
+
+        <!-- Section: Navigasi Pantas (Mobile Quick Navigation) -->
+        <div class="drawer-section drawer-nav-section">
+          <div class="drawer-section-title" id="txt-drawer-nav-title">Halaman & Navigasi</div>
+          <div class="drawer-nav-list">
+            <button class="drawer-nav-btn active" data-drawer-tab="tab-dashboard">
+              <span class="drawer-nav-icon">📊</span>
+              <span id="dmenu-dashboard">Ringkasan Utama</span>
+            </button>
+            <button class="drawer-nav-btn" data-drawer-tab="tab-tasks">
+              <span class="drawer-nav-icon">📋</span>
+              <span id="dmenu-tasks">Senarai Tugasan</span>
+            </button>
+            <button class="drawer-nav-btn" data-drawer-tab="tab-goals">
+              <span class="drawer-nav-icon">🎯</span>
+              <span id="dmenu-goals">Matlamat Harian</span>
+            </button>
+            <button class="drawer-nav-btn" data-drawer-tab="tab-timeline">
+              <span class="drawer-nav-icon">⏱️</span>
+              <span id="dmenu-timeline">Blok Garis Masa</span>
+            </button>
+            <button class="drawer-nav-btn" data-drawer-tab="tab-analytics">
+              <span class="drawer-nav-icon">📈</span>
+              <span id="dmenu-analytics">Analisis & Prestasi</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: Alat Produktiviti -->
+        <div class="drawer-section">
+          <div class="drawer-section-title" id="txt-drawer-tools-title">Alat & Tetapan</div>
+          <button class="drawer-action-btn" id="drawer-btn-auto-schedule">
+            <span class="drawer-action-icon">⚡</span>
+            <div>
+              <div class="drawer-action-title" id="txt-drawer-auto-sched">Auto-Susun Jadual Pintar</div>
+              <div class="drawer-action-sub" id="txt-drawer-auto-sched-sub">Hapuskan pertindihan masa secara berturutan</div>
+            </div>
+          </button>
+          <button class="drawer-action-btn" id="drawer-btn-settings">
+            <span class="drawer-action-icon">⚙️</span>
+            <div>
+              <div class="drawer-action-title" id="txt-drawer-settings">Tetapan Waktu Harian</div>
+              <div class="drawer-action-sub" id="txt-drawer-settings-sub">Waktu bangun, tidur & masa rehat</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Section: Pengurusan Data -->
+        <div class="drawer-section">
+          <div class="drawer-section-title" id="txt-drawer-data-title">Pengurusan Data</div>
+          <div class="drawer-action-grid">
+            <button class="drawer-grid-btn" id="drawer-btn-export">
+              <span>📥</span>
+              <span id="txt-drawer-export">Eksport</span>
+            </button>
+            <button class="drawer-grid-btn" id="drawer-btn-import">
+              <span>📤</span>
+              <span id="txt-drawer-import">Import</span>
+            </button>
+            <button class="drawer-grid-btn" id="drawer-btn-reset">
+              <span>🔄</span>
+              <span id="txt-drawer-reset">Pulih Demo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer (Auth Button) -->
+      <div class="drawer-footer">
+        <button type="button" class="drawer-auth-btn" id="btn-drawer-auth">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span id="txt-drawer-auth-btn">Log Masuk / Daftar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
   <script src="/js/bundle.js?v=4.0"></script>
   <script>
     // Fallback sekiranya bundle.js lambat / terganggu
