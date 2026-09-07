@@ -5,8 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>DailyPulse - Pengurusan Tugasan & Matlamat Harian Pintar</title>
   <meta name="description" content="Sistem pintar pengiraan masa tugasan dan matlamat harian, auto-jadual, fokus timer, dan analitik masa untuk produktiviti maksimum.">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Critical protection so modals never render inline before or during CSS load */
+    .modal-overlay, .timer-modal {
+      display: none !important;
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+    }
+    .modal-overlay.active, .timer-modal.active {
+      display: flex !important;
+    }
+  </style>
 </head>
 <body>
 

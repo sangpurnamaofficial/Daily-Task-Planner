@@ -1,6 +1,8 @@
+@charset "UTF-8";
+
 /* ==========================================================================
-   Main CSS - DailyPulse: Smart Daily Tasks & Goals Time Planner
-   Reka Bentuk Premium Dark-Mode, Glassmorphism & Tipografi Moden
+   DailyPulse - Core Design System & Tokens
+   Mobile-First, Dark Glassmorphism, Responsive
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -57,7 +59,9 @@ body {
   line-height: 1.5;
   min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   overflow-x: hidden;
   position: relative;
 }
