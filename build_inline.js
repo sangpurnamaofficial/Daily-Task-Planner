@@ -64,3 +64,20 @@ if (scriptRegex.test(html)) {
 
 fs.writeFileSync(path.join(baseDir, 'index.html'), html, 'utf8');
 console.log('index.html updated successfully! File size:', html.length, 'bytes');
+
+// ================= BUNDLE JS COMPILATION =================
+const jsFiles = ['i18n.js', 'timeEngine.js', 'storage.js', 'timer.js', 'analytics.js', 'app.js'];
+let bundleContent = '/* DailyPulse Consolidated Production Bundle */\n\n';
+
+for (const file of jsFiles) {
+  const filePath = path.join(baseDir, 'js', file);
+  if (fs.existsSync(filePath)) {
+    bundleContent += `/* --- js/${file} --- */\n`;
+    bundleContent += fs.readFileSync(filePath, 'utf8') + '\n\n';
+  }
+}
+
+bundleContent += 'window.DailyPulseLoaded = true;\n';
+
+fs.writeFileSync(path.join(baseDir, 'js', 'bundle.js'), bundleContent, 'utf8');
+console.log('js/bundle.js generated successfully! Size:', bundleContent.length, 'bytes');

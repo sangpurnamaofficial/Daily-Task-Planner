@@ -16,6 +16,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css?v=4.0">
+  <!-- Google Identity Services (Sign in with Google) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style id="app-inline-styles">
 
 
@@ -1396,6 +1398,318 @@ body::before {
   transition: none !important;
 }
 
+/* ==========================================================================
+   AUTHENTICATION & USER PROFILE STYLES
+   Mobile-First, Dark Glassmorphism, Google GIS Compatible
+   ========================================================================== */
+
+.auth-header-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.auth-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px 0 6px;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.auth-pill-btn:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.auth-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.auth-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-pill-name {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dropdown User Menu */
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(99, 102, 241, 0.15);
+  z-index: 1100;
+  animation: dropdownPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownPop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.user-dropdown-header {
+  padding: 8px 10px 10px;
+}
+
+.user-dropdown-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-email {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-glass);
+  margin: 4px 0 6px;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: #f87171;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+
+.dropdown-item:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Modal Sheet Auth Elements */
+.auth-sheet {
+  max-width: 440px !important;
+}
+
+.auth-header-block {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.auth-brand-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 8px;
+}
+
+.auth-modal-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+/* Google Sign-in Button */
+.btn-google-auth {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  margin-bottom: 16px;
+}
+
+.btn-google-auth:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.btn-google-auth:active {
+  transform: translateY(0);
+}
+
+.google-svg {
+  flex-shrink: 0;
+}
+
+/* Divider with text */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-glass);
+}
+
+.auth-divider-text {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+/* Tabs: Login / Sign Up */
+.auth-tabs {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  margin-bottom: 18px;
+  gap: 4px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: calc(var(--radius-md) - 3px);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.auth-tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 10px var(--primary-glow);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 42px;
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.btn-toggle-eye:hover {
+  color: var(--text-main);
+}
+
+.auth-alert-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 0.8rem;
+  margin-bottom: 14px;
+  animation: shakeAlert 0.3s ease;
+}
+
+@keyframes shakeAlert {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.auth-footer-note {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 14px;
+}
+
+
 
   </style>
 </head>
@@ -1418,6 +1732,28 @@ body::before {
         <div class="lang-toggle-btn" id="lang-toggle" title="Tukar Bahasa / Switch Language">
           <span class="lang-opt active" id="lang-opt-ms">BM</span>
           <span class="lang-opt" id="lang-opt-en">EN</span>
+        </div>
+
+        <!-- Profil Pengguna / Butang Log Masuk -->
+        <div class="auth-header-wrapper" id="auth-header-wrapper">
+          <button class="auth-pill-btn" id="btn-open-auth" title="Log Masuk / Profil Pengguna" aria-label="Akaun Pengguna">
+            <div class="auth-avatar" id="header-user-avatar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <span class="auth-pill-name" id="header-user-name">Masuk</span>
+          </button>
+          <!-- Menu Turun Pengguna (Dropdown) -->
+          <div class="user-dropdown-menu" id="user-dropdown-menu" style="display: none;">
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-name" id="dropdown-user-name">Pengguna</div>
+              <div class="user-dropdown-email" id="dropdown-user-email">user@example.com</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="btn-dropdown-logout">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span id="txt-dropdown-logout">Log Keluar</span>
+            </button>
+          </div>
         </div>
 
         <button class="icon-btn" id="btn-auto-schedule" title="Auto-Susun Jadual Pintar">
@@ -1863,6 +2199,86 @@ body::before {
       <button type="button" class="btn-submit" id="btn-apply-auto-schedule">⚡ Laksana Auto-Susun Jadual Sekarang</button>
       <button type="button" class="btn-secondary" id="btn-save-settings">Simpan Tetapan</button>
       <button type="button" class="btn-secondary" id="btn-close-settings">Tutup</button>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 5: LOG MASUK & DAFTAR AKAUN (AUTH) ================= -->
+  <div class="modal-overlay" id="modal-auth">
+    <div class="modal-sheet auth-sheet">
+      <button type="button" class="modal-close-icon-btn" id="btn-x-close-auth" aria-label="Tutup" title="Tutup">✕</button>
+      <div class="modal-handle"></div>
+      
+      <!-- Brand & Title -->
+      <div class="auth-header-block">
+        <div class="auth-brand-badge">⚡ DailyPulse Cloud</div>
+        <h3 class="modal-title" id="auth-modal-title">Log Masuk DailyPulse</h3>
+        <p class="auth-modal-sub" id="auth-modal-subtitle">Segerakkan tugasan & matlamat anda merentasi semua peranti dengan selamat.</p>
+      </div>
+
+      <!-- Google Sign-In Primary Button -->
+      <button type="button" class="btn-google-auth" id="btn-google-signin">
+        <svg class="google-svg" width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="txt-google-btn">Teruskan dengan Google</span>
+      </button>
+
+      <!-- Google GSI Hidden Container -->
+      <div id="g-signin-container" style="display: none;"></div>
+
+      <!-- Divider -->
+      <div class="auth-divider">
+        <span class="auth-divider-line"></span>
+        <span class="auth-divider-text" id="auth-divider-label">atau guna emel</span>
+        <span class="auth-divider-line"></span>
+      </div>
+
+      <!-- Auth Switcher Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="tab-auth-login">Log Masuk</button>
+        <button type="button" class="auth-tab-btn" id="tab-auth-signup">Daftar Akaun</button>
+      </div>
+
+      <!-- Alert / Error Box -->
+      <div class="auth-alert-box" id="auth-alert-box" style="display: none;">
+        <span class="alert-icon">⚠️</span>
+        <span class="alert-text" id="auth-alert-text"></span>
+      </div>
+
+      <!-- Form: Login & Register -->
+      <form id="form-auth" autocomplete="on">
+        <!-- Name (only for signup) -->
+        <div class="form-group" id="group-auth-name" style="display: none;">
+          <label class="form-label" for="auth-input-name" id="auth-name-label">Nama Penuh</label>
+          <input type="text" id="auth-input-name" class="form-input" placeholder="Cth: Ahmad Razak" autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="auth-input-email" id="auth-email-label">Alamat Emel</label>
+          <input type="email" id="auth-input-email" class="form-input" placeholder="nama@contoh.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="auth-input-password" id="auth-password-label">Kata Laluan</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="auth-input-password" class="form-input" placeholder="Sekurang-kurangnya 6 aksara" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-eye" id="btn-toggle-pwd-eye" title="Papar / Sembunyi Kata Laluan" aria-label="Toggle Password">
+              <svg id="eye-icon-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-icon-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-submit-auth">Log Masuk Sekarang</button>
+        <button type="button" class="btn-secondary" id="btn-close-auth-modal">Batal</button>
+      </form>
+
+      <div class="auth-footer-note" id="auth-footer-note">
+        Data anda disimpan secara peribadi & selamat di awan.
+      </div>
     </div>
   </div>
 

@@ -142,7 +142,39 @@ const I18N = {
       focusGoalTag: 'MATLAMAT HARIAN',
       finishAndSaveSession: '✓ Selesaikan & Simpan Masa Sesi',
       timerFinishedAlert: 'Masa tamat untuk',
-      sessionLogged: 'Sesi anda telah direkodkan.'
+      sessionLogged: 'Sesi anda telah direkodkan.',
+
+      // Pengesahan & Pengguna (Auth)
+      authModalTitleLogin: 'Log Masuk DailyPulse',
+      authModalTitleSignup: 'Daftar Akaun DailyPulse',
+      authModalSubtitle: 'Segerakkan tugasan & matlamat anda merentasi semua peranti dengan selamat.',
+      loginTab: 'Log Masuk',
+      signupTab: 'Daftar Akaun',
+      btnGoogleAuth: 'Teruskan dengan Google',
+      orDivider: 'atau guna emel',
+      fullNameLabel: 'Nama Penuh',
+      fullNamePlaceholder: 'Cth: Ahmad Razak',
+      emailLabel: 'Alamat Emel',
+      emailPlaceholder: 'nama@contoh.com',
+      passwordLabel: 'Kata Laluan',
+      passwordPlaceholder: 'Sekurang-kurangnya 6 aksara',
+      btnSubmitLogin: 'Log Masuk Sekarang',
+      btnSubmitSignup: 'Daftar Akaun Percuma',
+      guestModeNote: 'Data anda disimpan secara peribadi & selamat.',
+      alreadyHaveAccount: 'Sudah mempunyai akaun?',
+      dontHaveAccount: 'Belum mempunyai akaun?',
+      switchToSignup: 'Daftar sekarang',
+      switchToLogin: 'Log masuk di sini',
+      profileMenu: 'Profil Pengguna',
+      guestUser: 'Tetamu / Demo',
+      loggedInAs: 'Log masuk sebagai',
+      logoutBtn: 'Log Keluar',
+      loginRequiredMsg: 'Sila log masuk untuk menyimpan data ke awan.',
+      loginSuccessMsg: 'Selamat kembali!',
+      signupSuccessMsg: 'Akaun anda berjaya dicipta!',
+      logoutSuccessMsg: 'Anda telah log keluar.',
+      errFillAll: 'Sila lengkapkan semua ruangan.',
+      errPassTooShort: 'Kata laluan mestilah sekurang-kurangnya 6 aksara.'
     },
 
     en: {
@@ -277,7 +309,39 @@ const I18N = {
       focusGoalTag: 'DAILY GOAL',
       finishAndSaveSession: '✓ Complete & Log Session Time',
       timerFinishedAlert: 'Time is up for',
-      sessionLogged: 'Your session has been logged.'
+      sessionLogged: 'Your session has been logged.',
+
+      // Authentication & Users
+      authModalTitleLogin: 'Sign In to DailyPulse',
+      authModalTitleSignup: 'Create DailyPulse Account',
+      authModalSubtitle: 'Sync your daily tasks and goals securely across all your devices.',
+      loginTab: 'Sign In',
+      signupTab: 'Sign Up',
+      btnGoogleAuth: 'Continue with Google',
+      orDivider: 'or continue with email',
+      fullNameLabel: 'Full Name',
+      fullNamePlaceholder: 'E.g., John Doe',
+      emailLabel: 'Email Address',
+      emailPlaceholder: 'name@example.com',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'At least 6 characters',
+      btnSubmitLogin: 'Sign In Now',
+      btnSubmitSignup: 'Create Free Account',
+      guestModeNote: 'Your data is securely and privately partitioned.',
+      alreadyHaveAccount: 'Already have an account?',
+      dontHaveAccount: "Don't have an account?",
+      switchToSignup: 'Sign up now',
+      switchToLogin: 'Sign in here',
+      profileMenu: 'User Profile',
+      guestUser: 'Guest / Demo',
+      loggedInAs: 'Signed in as',
+      logoutBtn: 'Sign Out',
+      loginRequiredMsg: 'Please sign in to sync your data with the cloud.',
+      loginSuccessMsg: 'Welcome back!',
+      signupSuccessMsg: 'Account created successfully!',
+      logoutSuccessMsg: 'You have signed out.',
+      errFillAll: 'Please fill in all required fields.',
+      errPassTooShort: 'Password must be at least 6 characters.'
     }
   },
 
@@ -635,7 +699,9 @@ const STORAGE_KEYS = {
   TASKS: 'DAILY_PULSE_TASKS',
   GOALS: 'DAILY_PULSE_GOALS',
   SETTINGS: 'DAILY_PULSE_SETTINGS',
-  HISTORY: 'DAILY_PULSE_HISTORY'
+  HISTORY: 'DAILY_PULSE_HISTORY',
+  AUTH_TOKEN: 'DAILY_PULSE_AUTH_TOKEN',
+  AUTH_USER: 'DAILY_PULSE_AUTH_USER'
 };
 
 const DEFAULT_SETTINGS = {
@@ -741,9 +807,153 @@ const INITIAL_GOALS = [
 const Storage = {
   isCloudConnected: false,
   onSyncCallbacks: [],
+  onAuthCallbacks: [],
+
+  // ================= AUTHENTICATION MANAGEMENT =================
+  getAuthToken() {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  getAuthUser() {
+    try {
+      const u = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  setSession(token, user) {
+    try {
+      if (token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      if (user) localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+      this.notifyAuth(user);
+    } catch (e) {
+      console.error('Ralat simpan sesi pengguna:', e);
+    }
+  },
+
+  clearSession() {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+      this.notifyAuth(null);
+    } catch (e) {
+      console.error('Ralat padam sesi pengguna:', e);
+    }
+  },
+
+  isAuthenticated() {
+    return !!this.getAuthToken();
+  },
+
+  getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = this.getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  },
+
+  onAuth(callback) {
+    this.onAuthCallbacks.push(callback);
+  },
+
+  notifyAuth(user) {
+    this.onAuthCallbacks.forEach(cb => {
+      try { cb(user); } catch (err) { console.error(err); }
+    });
+  },
+
+  async register({ name, email, password }) {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Pendaftaran gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async login({ email, password }) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Log masuk gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async loginWithGoogle({ credential, email, name, avatar }) {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential, email, name, avatar })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Log masuk Google gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async logout() {
+    const token = this.getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: this.getAuthHeaders()
+        });
+      } catch (e) {}
+    }
+    this.clearSession();
+    // Muat semula data demo/awam
+    await this.initCloudSync();
+    return true;
+  },
+
+  async checkAuthStatus() {
+    const token = this.getAuthToken();
+    if (!token) return null;
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          this.setSession(token, data.user);
+          return data.user;
+        }
+      }
+      this.clearSession();
+      return null;
+    } catch (e) {
+      return this.getAuthUser();
+    }
+  },
 
   /**
-   * Muat turun data terkini dari REST API pelayan
+   * Muat turun data terkini dari REST API pelayan mengikut pengguna aktif
    */
   async initCloudSync() {
     try {
@@ -751,11 +961,13 @@ const Storage = {
       if (res.ok) {
         this.isCloudConnected = true;
 
+        const headers = this.getAuthHeaders();
+
         // Tarik data serentak dari database pelayan
         const [tasksRes, goalsRes, settingsRes] = await Promise.all([
-          fetch('/api/tasks').then(r => r.json()).catch(() => null),
-          fetch('/api/goals').then(r => r.json()).catch(() => null),
-          fetch('/api/settings').then(r => r.json()).catch(() => null)
+          fetch('/api/tasks', { headers }).then(r => r.json()).catch(() => null),
+          fetch('/api/goals', { headers }).then(r => r.json()).catch(() => null),
+          fetch('/api/settings', { headers }).then(r => r.json()).catch(() => null)
         ]);
 
         if (tasksRes && tasksRes.tasks) {
@@ -808,7 +1020,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/tasks', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify({ tasks })
         }).catch(() => {});
       }
@@ -838,7 +1050,7 @@ const Storage = {
         goals.forEach(g => {
           fetch(`/api/goals/${g.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify(g)
           }).catch(() => {});
         });
@@ -867,7 +1079,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/settings', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify(settings)
         }).catch(() => {});
       }
@@ -890,7 +1102,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/history', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify(entry)
         }).catch(() => {});
       }
@@ -950,7 +1162,10 @@ const Storage = {
     this.saveGoals(INITIAL_GOALS);
     this.saveSettings(DEFAULT_SETTINGS);
     if (typeof fetch !== 'undefined') {
-      fetch('/api/reset', { method: 'POST' }).catch(() => {});
+      fetch('/api/reset', {
+        method: 'POST',
+        headers: this.getAuthHeaders()
+      }).catch(() => {});
     }
   }
 };
@@ -1446,6 +1661,44 @@ document.addEventListener('DOMContentLoaded', () => {
   // Quick Add FAB
   const fabQuickAdd = document.getElementById('fab-quick-add');
 
+  // ================= ELEMEN DOM AUTH & PROFIL =================
+  const btnOpenAuth = document.getElementById('btn-open-auth');
+  const headerUserAvatar = document.getElementById('header-user-avatar');
+  const headerUserName = document.getElementById('header-user-name');
+  const userDropdownMenu = document.getElementById('user-dropdown-menu');
+  const dropdownUserName = document.getElementById('dropdown-user-name');
+  const dropdownUserEmail = document.getElementById('dropdown-user-email');
+  const btnDropdownLogout = document.getElementById('btn-dropdown-logout');
+  const txtDropdownLogout = document.getElementById('txt-dropdown-logout');
+
+  const modalAuth = document.getElementById('modal-auth');
+  const btnXCloseAuth = document.getElementById('btn-x-close-auth');
+  const btnCloseAuthModal = document.getElementById('btn-close-auth-modal');
+  const btnGoogleSignin = document.getElementById('btn-google-signin');
+  const txtGoogleBtn = document.getElementById('txt-google-btn');
+  const tabAuthLogin = document.getElementById('tab-auth-login');
+  const tabAuthSignup = document.getElementById('tab-auth-signup');
+  const authAlertBox = document.getElementById('auth-alert-box');
+  const authAlertText = document.getElementById('auth-alert-text');
+  const formAuth = document.getElementById('form-auth');
+  const groupAuthName = document.getElementById('group-auth-name');
+  const authInputName = document.getElementById('auth-input-name');
+  const authInputEmail = document.getElementById('auth-input-email');
+  const authInputPassword = document.getElementById('auth-input-password');
+  const btnTogglePwdEye = document.getElementById('btn-toggle-pwd-eye');
+  const eyeIconShow = document.getElementById('eye-icon-show');
+  const eyeIconHide = document.getElementById('eye-icon-hide');
+  const btnSubmitAuth = document.getElementById('btn-submit-auth');
+  const authModalTitle = document.getElementById('auth-modal-title');
+  const authModalSubtitle = document.getElementById('auth-modal-subtitle');
+  const authFooterNote = document.getElementById('auth-footer-note');
+  const authDividerLabel = document.getElementById('auth-divider-label');
+  const authNameLabel = document.getElementById('auth-name-label');
+  const authEmailLabel = document.getElementById('auth-email-label');
+  const authPasswordLabel = document.getElementById('auth-password-label');
+
+  let authMode = 'login'; // 'login' | 'signup'
+
   // ================= UTILITI AUDIO, HAPTIK & TOAST =================
   function playAudioChime(type = 'success') {
     try {
@@ -1704,6 +1957,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (calcBoxLabel) {
       calcBoxLabel.textContent = t('timeToSpend');
     }
+
+    // Terjemahan Auth Modal & Profil
+    if (txtGoogleBtn) txtGoogleBtn.textContent = t('btnGoogleAuth');
+    if (authDividerLabel) authDividerLabel.textContent = t('orDivider');
+    if (tabAuthLogin) tabAuthLogin.textContent = t('loginTab');
+    if (tabAuthSignup) tabAuthSignup.textContent = t('signupTab');
+    if (authNameLabel) authNameLabel.textContent = t('fullNameLabel');
+    if (authInputName) authInputName.placeholder = t('fullNamePlaceholder');
+    if (authEmailLabel) authEmailLabel.textContent = t('emailLabel');
+    if (authInputEmail) authInputEmail.placeholder = t('emailPlaceholder');
+    if (authPasswordLabel) authPasswordLabel.textContent = t('passwordLabel');
+    if (authInputPassword) authInputPassword.placeholder = t('passwordPlaceholder');
+    if (authFooterNote) authFooterNote.textContent = t('guestModeNote');
+    if (txtDropdownLogout) txtDropdownLogout.textContent = t('logoutBtn');
+    if (authModalSubtitle) authModalSubtitle.textContent = t('authModalSubtitle');
+
+    if (authMode === 'signup') {
+      if (authModalTitle) authModalTitle.textContent = t('authModalTitleSignup');
+      if (btnSubmitAuth) btnSubmitAuth.textContent = t('btnSubmitSignup');
+    } else {
+      if (authModalTitle) authModalTitle.textContent = t('authModalTitleLogin');
+      if (btnSubmitAuth) btnSubmitAuth.textContent = t('btnSubmitLogin');
+    }
+
+    updateAuthUI(window.Storage.getAuthUser());
   }
 
   // Tukar bahasa dan simpan
@@ -2204,6 +2482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCloseTaskModal.addEventListener('click', () => modalTask.classList.remove('active'));
     btnCloseGoalModal.addEventListener('click', () => modalGoal.classList.remove('active'));
     btnCloseSettings.addEventListener('click', () => modalSettings.classList.remove('active'));
+    if (btnCloseAuthModal) btnCloseAuthModal.addEventListener('click', closeAuthModal);
 
     const btnXCloseTask = document.getElementById('btn-x-close-task');
     if (btnXCloseTask) btnXCloseTask.addEventListener('click', () => modalTask.classList.remove('active'));
@@ -2214,12 +2493,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnXCloseSettings = document.getElementById('btn-x-close-settings');
     if (btnXCloseSettings) btnXCloseSettings.addEventListener('click', () => modalSettings.classList.remove('active'));
 
+    if (btnXCloseAuth) btnXCloseAuth.addEventListener('click', closeAuthModal);
+
     // Tutup Modal Bila Ketuk Latar Gelap (Backdrop Tap to Dismiss)
-    [modalTask, modalGoal, modalSettings].forEach(overlay => {
+    [modalTask, modalGoal, modalSettings, modalAuth].forEach(overlay => {
       if (overlay) {
         overlay.addEventListener('click', (e) => {
           if (e.target === overlay) {
             overlay.classList.remove('active');
+            if (overlay === modalAuth) hideAuthAlert();
           }
         });
       }
@@ -2231,6 +2513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTask.classList.remove('active');
         modalGoal.classList.remove('active');
         modalSettings.classList.remove('active');
+        if (modalAuth) closeAuthModal();
       });
     });
 
@@ -2240,9 +2523,62 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTask.classList.remove('active');
         modalGoal.classList.remove('active');
         modalSettings.classList.remove('active');
+        if (modalAuth) closeAuthModal();
         if (modalTimer) modalTimer.classList.remove('active');
+        if (userDropdownMenu) userDropdownMenu.style.display = 'none';
       }
     });
+
+    // ================= EVENT LISTENERS AUTH =================
+    if (btnOpenAuth) {
+      btnOpenAuth.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.Storage.isAuthenticated()) {
+          const isShown = userDropdownMenu.style.display === 'block';
+          userDropdownMenu.style.display = isShown ? 'none' : 'block';
+        } else {
+          openAuthModal('login');
+        }
+      });
+    }
+
+    if (btnDropdownLogout) {
+      btnDropdownLogout.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleLogout();
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (userDropdownMenu && !e.target.closest('#auth-header-wrapper')) {
+        userDropdownMenu.style.display = 'none';
+      }
+    });
+
+    if (tabAuthLogin) tabAuthLogin.addEventListener('click', () => setAuthMode('login'));
+    if (tabAuthSignup) tabAuthSignup.addEventListener('click', () => setAuthMode('signup'));
+
+    if (btnTogglePwdEye) {
+      btnTogglePwdEye.addEventListener('click', () => {
+        const isPassword = authInputPassword.type === 'password';
+        authInputPassword.type = isPassword ? 'text' : 'password';
+        eyeIconShow.style.display = isPassword ? 'none' : 'block';
+        eyeIconHide.style.display = isPassword ? 'block' : 'none';
+      });
+    }
+
+    if (formAuth) {
+      formAuth.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleAuthFormSubmit();
+      });
+    }
+
+    if (btnGoogleSignin) {
+      btnGoogleSignin.addEventListener('click', () => {
+        handleGoogleLoginClick();
+      });
+    }
 
     // Buka Tetapan
     btnOpenSettings.addEventListener('click', () => modalSettings.classList.add('active'));
@@ -2703,7 +3039,257 @@ document.addEventListener('DOMContentLoaded', () => {
     })[m]);
   }
 
+  // ================= PENGURUSAN PENGESAHAN & PROFIL (AUTH) =================
+  function updateAuthUI(user) {
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+    if (user) {
+      const firstName = (user.name || 'User').split(' ')[0];
+      if (headerUserName) headerUserName.textContent = firstName;
+      if (headerUserAvatar) {
+        if (user.avatar) {
+          headerUserAvatar.innerHTML = `<img src="${escapeHtml(user.avatar)}" alt="${escapeHtml(user.name)}" onerror="this.parentElement.textContent='${escapeHtml(firstName.charAt(0).toUpperCase())}'">`;
+        } else {
+          headerUserAvatar.textContent = firstName.charAt(0).toUpperCase();
+        }
+      }
+      if (dropdownUserName) dropdownUserName.textContent = user.name || 'Pengguna';
+      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
+      if (btnOpenAuth) btnOpenAuth.title = `${t('profileMenu')}: ${user.name}`;
+    } else {
+      if (headerUserName) headerUserName.textContent = t('loginTab') || 'Masuk';
+      if (headerUserAvatar) {
+        headerUserAvatar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+      }
+      if (btnOpenAuth) btnOpenAuth.title = t('authModalTitleLogin') || 'Log Masuk / Profil';
+      if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+    }
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+
+    if (mode === 'signup') {
+      if (tabAuthSignup) tabAuthSignup.classList.add('active');
+      if (tabAuthLogin) tabAuthLogin.classList.remove('active');
+      if (groupAuthName) groupAuthName.style.display = 'block';
+      if (authInputName) authInputName.setAttribute('required', 'required');
+      if (authModalTitle) authModalTitle.textContent = t('authModalTitleSignup');
+      if (btnSubmitAuth) btnSubmitAuth.textContent = t('btnSubmitSignup');
+      if (authInputPassword) authInputPassword.setAttribute('autocomplete', 'new-password');
+    } else {
+      if (tabAuthLogin) tabAuthLogin.classList.add('active');
+      if (tabAuthSignup) tabAuthSignup.classList.remove('active');
+      if (groupAuthName) groupAuthName.style.display = 'none';
+      if (authInputName) authInputName.removeAttribute('required');
+      if (authModalTitle) authModalTitle.textContent = t('authModalTitleLogin');
+      if (btnSubmitAuth) btnSubmitAuth.textContent = t('btnSubmitLogin');
+      if (authInputPassword) authInputPassword.setAttribute('autocomplete', 'current-password');
+    }
+    hideAuthAlert();
+  }
+
+  function openAuthModal(mode = 'login') {
+    if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+    setAuthMode(mode);
+    if (formAuth) formAuth.reset();
+    if (authInputPassword) authInputPassword.type = 'password';
+    if (eyeIconShow) eyeIconShow.style.display = 'block';
+    if (eyeIconHide) eyeIconHide.style.display = 'none';
+    if (modalAuth) modalAuth.classList.add('active');
+    setTimeout(() => {
+      if (mode === 'signup' && authInputName) authInputName.focus();
+      else if (authInputEmail) authInputEmail.focus();
+    }, 150);
+  }
+
+  function closeAuthModal() {
+    if (modalAuth) modalAuth.classList.remove('active');
+    hideAuthAlert();
+  }
+
+  function showAuthAlert(msg) {
+    if (authAlertText) authAlertText.textContent = msg;
+    if (authAlertBox) authAlertBox.style.display = 'flex';
+  }
+
+  function hideAuthAlert() {
+    if (authAlertBox) authAlertBox.style.display = 'none';
+  }
+
+  async function handleAuthFormSubmit() {
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+    hideAuthAlert();
+
+    const email = authInputEmail.value.trim();
+    const password = authInputPassword.value;
+    const name = authInputName ? authInputName.value.trim() : '';
+
+    if (!email || !password || (authMode === 'signup' && !name)) {
+      showAuthAlert(t('errFillAll'));
+      return;
+    }
+
+    if (password.length < 6) {
+      showAuthAlert(t('errPassTooShort'));
+      return;
+    }
+
+    const origBtnText = btnSubmitAuth.textContent;
+    btnSubmitAuth.disabled = true;
+    btnSubmitAuth.textContent = '⏳ ...';
+
+    try {
+      if (authMode === 'signup') {
+        await window.Storage.register({ name, email, password });
+        showToast(t('signupSuccessMsg'), 'success');
+      } else {
+        await window.Storage.login({ email, password });
+        showToast(t('loginSuccessMsg'), 'success');
+      }
+
+      playAudioChime('complete');
+      triggerHaptic([30, 40, 50]);
+      closeAuthModal();
+
+      // Muat semula data pengguna
+      tasks = window.Storage.getTasks();
+      goals = window.Storage.getGoals();
+      settings = window.Storage.getSettings();
+      renderAll();
+    } catch (err) {
+      showAuthAlert(err.message || 'Ralat berlaku. Sila cuba lagi.');
+      triggerHaptic([50, 40, 50]);
+      playAudioChime('pop');
+    } finally {
+      btnSubmitAuth.disabled = false;
+      btnSubmitAuth.textContent = origBtnText;
+    }
+  }
+
+  async function handleGoogleLoginClick() {
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+
+    // Jika GIS client telah dikonfigurasi dengan Client ID
+    if (window.google && window.google.accounts && window.google.accounts.id && window.GOOGLE_CLIENT_ID) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: window.GOOGLE_CLIENT_ID,
+          callback: async (response) => {
+            if (response.credential) {
+              try {
+                await window.Storage.loginWithGoogle({ credential: response.credential });
+                showToast(t('loginSuccessMsg'), 'success');
+                playAudioChime('complete');
+                closeAuthModal();
+                tasks = window.Storage.getTasks();
+                goals = window.Storage.getGoals();
+                renderAll();
+              } catch (e) {
+                showAuthAlert(e.message);
+              }
+            }
+          }
+        });
+        window.google.accounts.id.prompt();
+        return;
+      } catch (e) {
+        console.warn('GIS error, using fallback:', e);
+      }
+    }
+
+    // Kotak dialog mesra pengguna untuk sambungan Google
+    const defaultEmail = authInputEmail.value.trim() || 'user.google@gmail.com';
+    const googleEmail = prompt(
+      window.I18N && window.I18N.getLanguage() === 'en'
+        ? 'Sign In with Google\nEnter your Google Account Email to continue:'
+        : 'Log Masuk Melalui Google\nMasukkan alamat emel akaun Google anda untuk meneruskan:',
+      defaultEmail
+    );
+
+    if (!googleEmail) return;
+
+    try {
+      const cleanEmail = googleEmail.trim();
+      const derivedName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const avatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(derivedName)}`;
+
+      await window.Storage.loginWithGoogle({
+        email: cleanEmail,
+        name: derivedName,
+        avatar
+      });
+
+      showToast(t('loginSuccessMsg'), 'success');
+      playAudioChime('complete');
+      triggerHaptic([30, 40, 50]);
+      closeAuthModal();
+
+      tasks = window.Storage.getTasks();
+      goals = window.Storage.getGoals();
+      settings = window.Storage.getSettings();
+      renderAll();
+    } catch (err) {
+      showAuthAlert(err.message || 'Ralat log masuk Google.');
+    }
+  }
+
+  async function handleLogout() {
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+    if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+    await window.Storage.logout();
+    showToast(t('logoutSuccessMsg'), 'success');
+    playAudioChime('pop');
+    triggerHaptic([30]);
+
+    tasks = window.Storage.getTasks();
+    goals = window.Storage.getGoals();
+    settings = window.Storage.getSettings();
+    renderAll();
+  }
+
+  // ================= INISIALISASI =================
+  function initApp() {
+    updateLanguagePills();
+    updateStaticTranslations();
+    renderCurrentDate();
+    loadSettingsIntoUI();
+    bindEvents();
+    bindTimerEvents();
+    bindSwipeToDismiss();
+
+    // Sediakan status auth awal
+    updateAuthUI(window.Storage.getAuthUser());
+    window.Storage.onAuth(updateAuthUI);
+
+    renderAll();
+
+    // Sahkan token dengan pelayan
+    window.Storage.checkAuthStatus().then(user => {
+      updateAuthUI(user);
+    });
+
+    // Kemas kini automatik setiap 60 saat untuk status tugasan aktif semasa
+    setInterval(() => {
+      renderDashboard();
+      renderTasksList();
+    }, 60000);
+
+    // Inisialisasi Cloud Database Sync
+    if (window.Storage && window.Storage.initCloudSync) {
+      window.Storage.onSync(() => {
+        tasks = window.Storage.getTasks();
+        goals = window.Storage.getGoals();
+        settings = window.Storage.getSettings();
+        renderAll();
+      });
+      window.Storage.initCloudSync();
+    }
+  }
+
   // Mulakan Aplikasi
   initApp();
 });
 
+
+window.DailyPulseLoaded = true;

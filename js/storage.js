@@ -7,7 +7,9 @@ const STORAGE_KEYS = {
   TASKS: 'DAILY_PULSE_TASKS',
   GOALS: 'DAILY_PULSE_GOALS',
   SETTINGS: 'DAILY_PULSE_SETTINGS',
-  HISTORY: 'DAILY_PULSE_HISTORY'
+  HISTORY: 'DAILY_PULSE_HISTORY',
+  AUTH_TOKEN: 'DAILY_PULSE_AUTH_TOKEN',
+  AUTH_USER: 'DAILY_PULSE_AUTH_USER'
 };
 
 const DEFAULT_SETTINGS = {
@@ -113,9 +115,153 @@ const INITIAL_GOALS = [
 const Storage = {
   isCloudConnected: false,
   onSyncCallbacks: [],
+  onAuthCallbacks: [],
+
+  // ================= AUTHENTICATION MANAGEMENT =================
+  getAuthToken() {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  getAuthUser() {
+    try {
+      const u = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  setSession(token, user) {
+    try {
+      if (token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      if (user) localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+      this.notifyAuth(user);
+    } catch (e) {
+      console.error('Ralat simpan sesi pengguna:', e);
+    }
+  },
+
+  clearSession() {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+      this.notifyAuth(null);
+    } catch (e) {
+      console.error('Ralat padam sesi pengguna:', e);
+    }
+  },
+
+  isAuthenticated() {
+    return !!this.getAuthToken();
+  },
+
+  getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = this.getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  },
+
+  onAuth(callback) {
+    this.onAuthCallbacks.push(callback);
+  },
+
+  notifyAuth(user) {
+    this.onAuthCallbacks.forEach(cb => {
+      try { cb(user); } catch (err) { console.error(err); }
+    });
+  },
+
+  async register({ name, email, password }) {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Pendaftaran gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async login({ email, password }) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Log masuk gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async loginWithGoogle({ credential, email, name, avatar }) {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential, email, name, avatar })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Log masuk Google gagal');
+    }
+    this.setSession(data.token, data.user);
+    await this.initCloudSync();
+    return data;
+  },
+
+  async logout() {
+    const token = this.getAuthToken();
+    if (token) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: this.getAuthHeaders()
+        });
+      } catch (e) {}
+    }
+    this.clearSession();
+    // Muat semula data demo/awam
+    await this.initCloudSync();
+    return true;
+  },
+
+  async checkAuthStatus() {
+    const token = this.getAuthToken();
+    if (!token) return null;
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          this.setSession(token, data.user);
+          return data.user;
+        }
+      }
+      this.clearSession();
+      return null;
+    } catch (e) {
+      return this.getAuthUser();
+    }
+  },
 
   /**
-   * Muat turun data terkini dari REST API pelayan
+   * Muat turun data terkini dari REST API pelayan mengikut pengguna aktif
    */
   async initCloudSync() {
     try {
@@ -123,11 +269,13 @@ const Storage = {
       if (res.ok) {
         this.isCloudConnected = true;
 
+        const headers = this.getAuthHeaders();
+
         // Tarik data serentak dari database pelayan
         const [tasksRes, goalsRes, settingsRes] = await Promise.all([
-          fetch('/api/tasks').then(r => r.json()).catch(() => null),
-          fetch('/api/goals').then(r => r.json()).catch(() => null),
-          fetch('/api/settings').then(r => r.json()).catch(() => null)
+          fetch('/api/tasks', { headers }).then(r => r.json()).catch(() => null),
+          fetch('/api/goals', { headers }).then(r => r.json()).catch(() => null),
+          fetch('/api/settings', { headers }).then(r => r.json()).catch(() => null)
         ]);
 
         if (tasksRes && tasksRes.tasks) {
@@ -180,7 +328,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/tasks', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify({ tasks })
         }).catch(() => {});
       }
@@ -210,7 +358,7 @@ const Storage = {
         goals.forEach(g => {
           fetch(`/api/goals/${g.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify(g)
           }).catch(() => {});
         });
@@ -239,7 +387,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/settings', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify(settings)
         }).catch(() => {});
       }
@@ -262,7 +410,7 @@ const Storage = {
       if (typeof fetch !== 'undefined') {
         fetch('/api/history', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeaders(),
           body: JSON.stringify(entry)
         }).catch(() => {});
       }
@@ -322,7 +470,10 @@ const Storage = {
     this.saveGoals(INITIAL_GOALS);
     this.saveSettings(DEFAULT_SETTINGS);
     if (typeof fetch !== 'undefined') {
-      fetch('/api/reset', { method: 'POST' }).catch(() => {});
+      fetch('/api/reset', {
+        method: 'POST',
+        headers: this.getAuthHeaders()
+      }).catch(() => {});
     }
   }
 };
