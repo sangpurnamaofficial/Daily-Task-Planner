@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DailyPulse - Pengurusan Tugasan & Matlamat Harian Pintar</title>
+  <meta name="description" content="Sistem pintar pengiraan masa tugasan dan matlamat harian, auto-jadual, fokus timer, dan analitik masa untuk produktiviti maksimum.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Bekas Utama Aplikasi -->
+  <div class="app-container">
+
+    <!-- Header Atas -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-info">
+          <h1>DailyPulse</h1>
+          <div class="date-pill" id="current-date-display">Isnin, 7 September</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Language Switcher Pill -->
+        <div class="lang-toggle-btn" id="lang-toggle" title="Tukar Bahasa / Switch Language">
+          <span class="lang-opt active" id="lang-opt-ms">BM</span>
+          <span class="lang-opt" id="lang-opt-en">EN</span>
+        </div>
+
+        <button class="icon-btn" id="btn-auto-schedule" title="Auto-Susun Jadual Pintar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-open-settings" title="Tetapan Masa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Kandungan Utama (Tab Views) -->
+    <main class="main-content">
+
+      <!-- ================= TAB 1: DASHBOARD / RINGKASAN ================= -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <!-- Daily Time Budget Gauge -->
+        <div class="glass-card budget-card" id="daily-budget-card">
+          <div class="budget-meta">
+            <div>
+              <div class="budget-title">Kapasiti Masa Harian</div>
+              <div class="budget-val" id="budget-planned-val">0j 0m</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="budget-sub" id="budget-capacity-sub">Daripada 15j 30m berjaga</div>
+              <div id="budget-status-pill" class="badge badge-duration" style="margin-top: 4px;">Optimum</div>
+            </div>
+          </div>
+
+          <div class="progress-track">
+            <div class="progress-fill" id="budget-progress-fill" style="width: 0%;"></div>
+          </div>
+
+          <div class="budget-stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">Tugasan</span>
+              <span class="stat-value" id="stat-task-time">0j 0m</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Matlamat</span>
+              <span class="stat-value" id="stat-goal-time">0j 0m</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Baki Terluang</span>
+              <span class="stat-value" id="stat-free-time">0j 0m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner Amaran Overlap (Jika ada) -->
+        <div id="overlap-alert-container"></div>
+
+        <!-- Kad Tugasan Seterusnya (Next Up Action) -->
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Fokus Seterusnya
+          </h2>
+          <button class="section-action" id="btn-jump-tasks">Lihat Semua</button>
+        </div>
+        <div id="next-task-container">
+          <!-- Diisi melalui JS -->
+        </div>
+
+        <!-- Ringkasan Matlamat Harian -->
+        <div class="section-header" style="margin-top: 20px;">
+          <h2 class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            Kemajuan Matlamat Harian
+          </h2>
+          <button class="section-action" id="btn-jump-goals">Urus Matlamat</button>
+        </div>
+        <div id="dashboard-goals-list">
+          <!-- Diisi melalui JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: TUGASAN HARIAN (TASKS) ================= -->
+      <section id="tab-tasks" class="tab-pane">
+        <div class="section-header">
+          <h2 class="section-title">Senarai Tugasan Harian</h2>
+          <button class="btn-focus" id="btn-task-auto-cascade" style="font-size: 0.75rem;">
+            ⚡ Auto-Jadual Berperingkat
+          </button>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="filter-bar">
+          <button class="filter-pill active" data-filter="Semua">Semua</button>
+          <button class="filter-pill" data-filter="Kerja">Kerja</button>
+          <button class="filter-pill" data-filter="Belajar">Belajar</button>
+          <button class="filter-pill" data-filter="Kesihatan">Kesihatan</button>
+          <button class="filter-pill" data-filter="Peribadi">Peribadi</button>
+          <button class="filter-pill" data-filter="Belum Selesai">Belum Selesai</button>
+        </div>
+
+        <!-- Senarai Tugasan -->
+        <div id="tasks-list-container">
+          <!-- Kad tugasan dimuatkan melalui JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: MATLAMAT HARIAN (GOALS) ================= -->
+      <section id="tab-goals" class="tab-pane">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Matlamat & Tabiat Harian</h2>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              Dipecahkan kepada kuota masa harian untuk kejayaan konsisten
+            </p>
+          </div>
+          <button class="btn-focus" id="btn-add-goal-top">+ Matlamat</button>
+        </div>
+
+        <div id="goals-list-container">
+          <!-- Kad matlamat dimuatkan melalui JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: GARIS MASA (TIMELINE) ================= -->
+      <section id="tab-timeline" class="tab-pane">
+        <div class="section-header">
+          <h2 class="section-title">Blok Masa Harian (Time-Blocking)</h2>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Visual 24 Jam</span>
+        </div>
+        <div class="glass-card" style="padding: 16px 12px;">
+          <div class="timeline-container" id="timeline-blocks-container">
+            <div class="timeline-line"></div>
+            <!-- Blok-blok masa dimuatkan melalui JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: ANALISIS & PRESTASI ================= -->
+      <section id="tab-analytics" class="tab-pane">
+        <div class="section-header">
+          <h2 class="section-title">Analisis Masa & Prestasi</h2>
+          <span class="badge badge-time" id="analytics-streak-badge">🔥 14 Hari Streak</span>
+        </div>
+
+        <!-- Kad Donut Carta Pecahan Masa -->
+        <div class="glass-card" style="text-align: center;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase;">
+            Pecahan Masa Mengikut Kategori
+          </div>
+          <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0;" id="donut-chart-container">
+            <!-- SVG Donut Chart -->
+          </div>
+          <div id="category-legend-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px;">
+            <!-- Petunjuk Kategori -->
+          </div>
+        </div>
+
+        <!-- Ringkasan Teks & Kongsi Jadual WhatsApp -->
+        <div class="glass-card">
+          <div class="section-header" style="margin-bottom: 8px;">
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Ringkasan Jadual Harian</h3>
+            <button class="btn-focus" id="btn-copy-agenda" style="font-size: 0.75rem;">📋 Salin Teks</button>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">
+            Salin teks jadual untuk dikongsi ke WhatsApp atau dicatat dalam nota anda.
+          </p>
+          <div class="share-box">
+            <pre id="agenda-text-preview" style="font-family: inherit; font-size: 0.8rem; color: #cbd5e1; white-space: pre-wrap; margin: 0;"></pre>
+          </div>
+        </div>
+
+        <!-- Sandaran Data & Tetapan Semula -->
+        <div class="glass-card">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Pengurusan Data</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn-secondary" id="btn-export-data">📥 Eksport Sandaran</button>
+            <button class="btn-secondary" id="btn-import-trigger">📤 Muat Naik Data</button>
+          </div>
+          <input type="file" id="file-import-input" accept=".json" style="display: none;">
+          <button class="btn-secondary" id="btn-reset-demo" style="margin-top: 10px; color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
+            🔄 Pulihkan Data Contoh
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Mini Floating Timer Bar (Bila timer sedang berjalan di latar) -->
+    <div class="mini-timer-pill" id="mini-timer-widget">
+      <span style="font-size: 0.8rem;">⏱️ Fokus:</span>
+      <span class="mini-timer-time" id="mini-timer-text">25:00</span>
+      <span style="font-size: 0.75rem; color: #a5b4fc;" id="mini-timer-title">Tugasan</span>
+    </div>
+
+    <!-- Floating Quick Add Button (+) -->
+    <button class="fab-btn" id="fab-quick-add" title="Tambah Tugasan Baru">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- Bar Navigasi Bawah (Bottom Navigation Bar) -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="tab-dashboard" id="nav-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Ringkasan</span>
+      </button>
+
+      <button class="nav-item" data-tab="tab-tasks" id="nav-tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <span>Tugasan</span>
+      </button>
+
+      <button class="nav-item" data-tab="tab-goals" id="nav-goals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 8 8 12 12 16 16 12 12 8"></polygon>
+        </svg>
+        <span>Matlamat</span>
+      </button>
+
+      <button class="nav-item" data-tab="tab-timeline" id="nav-timeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="20" x2="12" y2="10"></line>
+          <line x1="18" y1="20" x2="18" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+        <span>Garis Masa</span>
+      </button>
+
+      <button class="nav-item" data-tab="tab-analytics" id="nav-analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+          <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+        </svg>
+        <span>Analisis</span>
+      </button>
+    </nav>
+
+  </div> <!-- /app-container -->
+
+
+  <!-- ================= MODAL 1: TAMBAH / SUNTING TUGASAN ================= -->
+  <div class="modal-overlay" id="modal-task">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title" id="modal-task-title">Tambah Tugasan Baru</h3>
+
+      <form id="form-task">
+        <input type="hidden" id="task-id">
+
+        <div class="form-group">
+          <label class="form-label" for="task-input-title">Tajuk Tugasan</label>
+          <input type="text" id="task-input-title" class="form-input" placeholder="Cth: Siapkan Analisis Laporan" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="task-input-category">Kategori</label>
+            <select id="task-input-category" class="form-select">
+              <option value="Kerja">💼 Kerja</option>
+              <option value="Belajar">📚 Belajar</option>
+              <option value="Kesihatan">🏃 Kesihatan</option>
+              <option value="Peribadi">✨ Peribadi</option>
+              <option value="Lain-lain">📌 Lain-lain</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="task-input-priority">Keutamaan</label>
+            <select id="task-input-priority" class="form-select">
+              <option value="Tinggi">🔴 Tinggi</option>
+              <option value="Sederhana" selected>🟡 Sederhana</option>
+              <option value="Rendah">⚪ Rendah</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pilihan Mod Pengiraan Masa -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="task-input-start">Waktu Mula</label>
+            <input type="time" id="task-input-start" class="form-input" value="09:00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="task-input-end">Waktu Tamat</label>
+            <input type="time" id="task-input-end" class="form-input" value="10:30">
+          </div>
+        </div>
+
+        <!-- Kotak Keputusan Pengiraan Masa Pintar (Live Calculator Output) -->
+        <div class="time-calc-result-box" id="calc-result-container">
+          <div class="calc-icon">⏱️</div>
+          <div>
+            <div class="calc-text">Masa Yang Perlu Diluangkan:</div>
+            <div class="calc-highlight" id="calc-duration-text">1 jam 30 minit (90 minit)</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="task-input-notes">Nota Ringkas (Pilihan)</label>
+          <textarea id="task-input-notes" class="form-textarea" rows="2" placeholder="Objektif atau catatan penting..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btn-save-task">Simpan Tugasan</button>
+        <button type="button" class="btn-secondary" id="btn-close-task-modal">Batal</button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL 2: TAMBAH MATLAMAT HARIAN ================= -->
+  <div class="modal-overlay" id="modal-goal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title" id="modal-goal-title">Tambah Matlamat Harian</h3>
+
+      <form id="form-goal">
+        <input type="hidden" id="goal-id">
+
+        <div class="form-group">
+          <label class="form-label" for="goal-input-title">Nama Matlamat</label>
+          <input type="text" id="goal-input-title" class="form-input" placeholder="Cth: Membaca Buku Ilmiah" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-input-category">Kategori</label>
+          <select id="goal-input-category" class="form-select">
+            <option value="Belajar">📚 Belajar</option>
+            <option value="Kesihatan">🏃 Kesihatan</option>
+            <option value="Kerja">💼 Kerja</option>
+            <option value="Peribadi">✨ Peribadi</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="goal-input-hours">Sasaran Jam/Minggu</label>
+            <input type="number" id="goal-input-hours" class="form-input" min="0.5" max="50" step="0.5" value="3.5" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="goal-input-days">Hari Komitmen/Minggu</label>
+            <select id="goal-input-days" class="form-select">
+              <option value="7">7 Hari (Setiap hari)</option>
+              <option value="6">6 Hari seminggu</option>
+              <option value="5" selected>5 Hari seminggu</option>
+              <option value="4">4 Hari seminggu</option>
+              <option value="3">3 Hari seminggu</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pengiraan Peruntukan Masa Harian -->
+        <div class="time-calc-result-box">
+          <div class="calc-icon">🎯</div>
+          <div>
+            <div class="calc-text">Masa Kena Spend Setiap Hari:</div>
+            <div class="calc-highlight" id="calc-goal-daily-text">42 minit / hari</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goal-input-notes">Peringatan / Catatan</label>
+          <textarea id="goal-input-notes" class="form-textarea" rows="2" placeholder="Cth: 15-20 muka surat sebelum tidur..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Simpan Matlamat</button>
+        <button type="button" class="btn-secondary" id="btn-close-goal-modal">Batal</button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL 3: TETAPAN MASA & AUTO-SCHEDULE ================= -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title">Tetapan Waktu Harian & Auto-Jadual</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="setting-day-start">Waktu Bangun / Mula Hari</label>
+          <input type="time" id="setting-day-start" class="form-input" value="07:30">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="setting-day-end">Waktu Tidur / Tamat Hari</label>
+          <input type="time" id="setting-day-end" class="form-input" value="23:00">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="setting-break-mins">Masa Rehat Antara Tugasan (Buffer)</label>
+        <select id="setting-break-mins" class="form-select">
+          <option value="5">5 minit</option>
+          <option value="10" selected>10 minit (Disyorkan)</option>
+          <option value="15">15 minit</option>
+          <option value="20">20 minit</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="setting-language">Pilihan Bahasa / Language</label>
+        <select id="setting-language" class="form-select">
+          <option value="ms">Bahasa Melayu (BM)</option>
+          <option value="en">English (EN)</option>
+        </select>
+      </div>
+
+      <div style="background: rgba(99,102,241,0.08); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #a5b4fc; margin-bottom: 4px;">⚡ Fungsi Auto-Susun Jadual Pintar</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+          Sistem akan menyusun semua tugasan hari ini secara berturutan bermula dari Waktu Mula Hari anda, menghapuskan pertindihan masa secara automatik.
+        </div>
+      </div>
+
+      <button type="button" class="btn-submit" id="btn-apply-auto-schedule">⚡ Laksana Auto-Susun Jadual Sekarang</button>
+      <button type="button" class="btn-secondary" id="btn-save-settings">Simpan Tetapan</button>
+      <button type="button" class="btn-secondary" id="btn-close-settings">Tutup</button>
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL 4: LIVE FOCUS TIMER ================= -->
+  <div class="timer-modal" id="modal-timer">
+    <button class="timer-close-btn" id="btn-close-timer" title="Kecilkan Pemasa">✕</button>
+
+    <div class="timer-target-tag" id="timer-tag">TUGASAN FOKUS</div>
+    <div class="timer-target-title" id="timer-item-title">Siapkan Laporan Analisis Projek</div>
+
+    <div class="timer-dial-wrap">
+      <svg class="timer-dial-svg" viewBox="0 0 100 100">
+        <circle class="timer-dial-bg" cx="50" cy="50" r="44"></circle>
+        <circle class="timer-dial-progress" id="timer-ring-progress" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"></circle>
+      </svg>
+      <div class="timer-time-display" id="timer-countdown-display">25:00</div>
+    </div>
+
+    <div class="timer-controls-row">
+      <button class="btn-timer-secondary" id="btn-timer-reset" title="Reset Pemasa">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
+      </button>
+
+      <button class="btn-timer-primary" id="btn-timer-toggle" title="Mula / Jeda">
+        <svg id="timer-icon-play" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <svg id="timer-icon-pause" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+      </button>
+
+      <button class="btn-timer-secondary" id="btn-timer-sound-toggle" title="Bunyi Alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+      </button>
+    </div>
+
+    <button class="btn-timer-complete" id="btn-timer-mark-done">
+      ✓ Selesaikan & Simpan Masa Sesi
+    </button>
+  </div>
+
+
+  <!-- Skrip Enjin Sistem -->
+  <script src="js/i18n.js"></script>
+  <script src="js/timeEngine.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

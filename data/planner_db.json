@@ -1,0 +1,100 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Semak & Balas Emel & Mesej Klien",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "08:30",
+      "endTime": "09:15",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 45,
+      "completed": true,
+      "notes": "Keutamaan untuk emel pelabur & kemas kini status mingguan"
+    },
+    {
+      "id": "task-2",
+      "title": "Siapkan Laporan Analisis Projek & Kod Prototaip",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:30",
+      "endTime": "11:45",
+      "durationMinutes": 135,
+      "actualMinutesSpent": 60,
+      "completed": false,
+      "notes": "Fokus mendalam (Deep Work) tanpa gangguan media sosial"
+    },
+    {
+      "id": "task-3",
+      "title": "Sesi Kajian AI & Pembelajaran Teknologi Baru",
+      "category": "Belajar",
+      "priority": "Sederhana",
+      "startTime": "14:00",
+      "endTime": "15:15",
+      "durationMinutes": 75,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Kaji dokumentasi model terkini & buat catatan ringkas"
+    },
+    {
+      "id": "task-4",
+      "title": "Senaman Kardio Ringan & Regangan Badan",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "17:30",
+      "endTime": "18:15",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Lari anak 3km di taman atau lompat tali di rumah"
+    }
+  ],
+  "goals": [
+    {
+      "id": "goal-1",
+      "title": "Membaca Buku Ilmiah / Bisnes",
+      "category": "Belajar",
+      "weeklyTargetHours": 3.5,
+      "daysPerWeek": 7,
+      "allocatedMinutes": 30,
+      "actualMinutesSpent": 30,
+      "completedToday": true,
+      "streakDays": 7,
+      "notes": "Minimum 15-20 muka surat setiap sesi"
+    },
+    {
+      "id": "goal-2",
+      "title": "Senaman Fizikal & Kesihatan Menyeluruh",
+      "category": "Kesihatan",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 20,
+      "completedToday": false,
+      "streakDays": 14,
+      "notes": "Kekal konsisten 5 hari seminggu"
+    },
+    {
+      "id": "goal-3",
+      "title": "Pembangunan Projek Peribadi / Portfolio",
+      "category": "Kerja",
+      "weeklyTargetHours": 7,
+      "daysPerWeek": 7,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 4,
+      "notes": "Bina ciri baharu setiap hari secara konsisten"
+    }
+  ],
+  "settings": {
+    "userName": "Dania",
+    "dayStartTime": "07:30",
+    "dayEndTime": "23:00",
+    "theme": "dark",
+    "defaultBreakMinutes": 15,
+    "enableSound": true,
+    "language": "en"
+  },
+  "history": []
+}

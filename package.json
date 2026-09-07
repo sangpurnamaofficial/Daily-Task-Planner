@@ -1,0 +1,19 @@
+{
+  "name": "daily-task-planner",
+  "version": "1.0.0",
+  "description": "Sistem Pengurusan Tugasan & Matlamat Harian Pintar dengan Pengiraan Masa Automatik",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "task-planner",
+    "goals",
+    "time-blocking",
+    "pomodoro",
+    "mobile-friendly"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
