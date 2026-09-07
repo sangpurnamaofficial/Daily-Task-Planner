@@ -2013,10 +2013,49 @@ document.addEventListener('DOMContentLoaded', () => {
       saveGoalFromForm();
     });
 
-    // Tutup Modals
+    // Tutup Modals (Butang Batal & Butang X Atas)
     btnCloseTaskModal.addEventListener('click', () => modalTask.classList.remove('active'));
     btnCloseGoalModal.addEventListener('click', () => modalGoal.classList.remove('active'));
     btnCloseSettings.addEventListener('click', () => modalSettings.classList.remove('active'));
+
+    const btnXCloseTask = document.getElementById('btn-x-close-task');
+    if (btnXCloseTask) btnXCloseTask.addEventListener('click', () => modalTask.classList.remove('active'));
+
+    const btnXCloseGoal = document.getElementById('btn-x-close-goal');
+    if (btnXCloseGoal) btnXCloseGoal.addEventListener('click', () => modalGoal.classList.remove('active'));
+
+    const btnXCloseSettings = document.getElementById('btn-x-close-settings');
+    if (btnXCloseSettings) btnXCloseSettings.addEventListener('click', () => modalSettings.classList.remove('active'));
+
+    // Tutup Modal Bila Ketuk Latar Gelap (Backdrop Tap to Dismiss)
+    [modalTask, modalGoal, modalSettings].forEach(overlay => {
+      if (overlay) {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            overlay.classList.remove('active');
+          }
+        });
+      }
+    });
+
+    // Tutup Modal Bila Ketuk Pemegang Atas (Modal Handle)
+    document.querySelectorAll('.modal-handle').forEach(handle => {
+      handle.addEventListener('click', () => {
+        modalTask.classList.remove('active');
+        modalGoal.classList.remove('active');
+        modalSettings.classList.remove('active');
+      });
+    });
+
+    // Tutup Menggunakan Papan Kekunci ESC
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        modalTask.classList.remove('active');
+        modalGoal.classList.remove('active');
+        modalSettings.classList.remove('active');
+        if (modalTimer) modalTimer.classList.remove('active');
+      }
+    });
 
     // Buka Tetapan
     btnOpenSettings.addEventListener('click', () => modalSettings.classList.add('active'));

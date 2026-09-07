@@ -24,13 +24,18 @@ const fontPreconnect = `  <link rel="preconnect" href="https://fonts.googleapis.
 ${css}
   </style>`;
 
-// Replace stylesheet links and styles in head
-const headRegex = /<link rel="stylesheet" href="css\/style\.css">[\s\S]*?<\/style>/;
-if (headRegex.test(html)) {
-  html = html.replace(headRegex, fontPreconnect);
-  console.log('Successfully replaced head styles with inline styles + preconnect + style.css fallback');
+const styleTagRegex = /<style id="app-inline-styles">[\s\S]*?<\/style>/;
+if (styleTagRegex.test(html)) {
+  html = html.replace(styleTagRegex, `<style id="app-inline-styles">\n${css}\n  </style>`);
+  console.log('Successfully updated app-inline-styles in index.html');
 } else {
-  console.log('Head regex did not match, please inspect');
+  const headRegex = /<link rel="stylesheet" href="css\/style\.css">[\s\S]*?<\/style>/;
+  if (headRegex.test(html)) {
+    html = html.replace(headRegex, fontPreconnect);
+    console.log('Successfully replaced head styles with inline styles + preconnect + style.css fallback');
+  } else {
+    console.log('Head regex did not match, please inspect');
+  }
 }
 
 // Replace scripts at the bottom with bundle.js and fallbacks

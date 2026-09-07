@@ -684,11 +684,39 @@
 }
 
 .modal-handle {
-  width: 40px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
   margin: -8px auto 16px;
+  cursor: pointer;
+}
+
+.modal-close-icon-btn {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+
+.modal-close-icon-btn:hover,
+.modal-close-icon-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: scale(0.92);
 }
 
 .modal-title {
@@ -696,6 +724,7 @@
   font-weight: 700;
   color: #fff;
   margin-bottom: 18px;
+  padding-right: 44px;
 }
 
 /* Form Styles */
