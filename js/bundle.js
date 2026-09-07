@@ -1446,6 +1446,150 @@ document.addEventListener('DOMContentLoaded', () => {
   // Quick Add FAB
   const fabQuickAdd = document.getElementById('fab-quick-add');
 
+  // ================= UTILITI AUDIO, HAPTIK & TOAST =================
+  function playAudioChime(type = 'success') {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+
+      if (type === 'complete') {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          const t = now + i * 0.09;
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.start(t);
+          osc.stop(t + 0.35);
+        });
+      } else if (type === 'success') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(440, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+    } catch (e) {}
+  }
+
+  function triggerHaptic(pattern = [30]) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    } catch (e) {}
+  }
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    const icon = type === 'success' ? '⚡' : '🔔';
+    toast.innerHTML = `<span style="font-size: 1.1rem;">${icon}</span> <span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 250);
+    }, 2800);
+  }
+
+  function isTaskCurrentlyOngoing(task) {
+    if (!task || task.completed) return false;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const startMins = window.TimeEngine.timeToMinutes(task.startTime);
+    const endMins = window.TimeEngine.timeToMinutes(task.endTime);
+
+    if (endMins >= startMins) {
+      return currentMins >= startMins && currentMins < endMins;
+    } else {
+      return currentMins >= startMins || currentMins < endMins;
+    }
+  }
+
+  function addGoalQuickMinutes(id, addedMinutes) {
+    const goal = goals.find(g => g.id === id);
+    if (!goal) return;
+
+    goal.actualMinutesSpent = (goal.actualMinutesSpent || 0) + addedMinutes;
+    if (goal.actualMinutesSpent >= goal.allocatedMinutes) {
+      goal.completedToday = true;
+    }
+    window.Storage.saveGoals(goals);
+    renderAll();
+
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+    const minText = isEn ? 'mins' : 'minit';
+    showToast(`+${addedMinutes} ${minText} untuk "${goal.title}"! 🎯`, 'success');
+    triggerHaptic([40, 30, 40]);
+    playAudioChime('success');
+  }
+
+  function bindSwipeToDismiss() {
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      const sheet = overlay.querySelector('.modal-sheet');
+      if (!sheet) return;
+
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+
+      sheet.addEventListener('touchstart', (e) => {
+        if (sheet.scrollTop > 5 && !e.target.closest('.modal-handle')) return;
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        sheet.classList.add('dragging');
+      }, { passive: true });
+
+      sheet.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        if (diff > 0) {
+          sheet.style.transform = `translateY(${diff}px)`;
+        }
+      }, { passive: true });
+
+      sheet.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        sheet.classList.remove('dragging');
+        const diff = currentY - startY;
+        sheet.style.transform = '';
+        if (diff > 90) {
+          overlay.classList.remove('active');
+          triggerHaptic([30]);
+        }
+      });
+    });
+  }
+
   // ================= INISIALISASI =================
   function initApp() {
     updateLanguagePills();
@@ -1454,7 +1598,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettingsIntoUI();
     bindEvents();
     bindTimerEvents();
+    bindSwipeToDismiss();
     renderAll();
+
+    // Kemas kini automatik setiap 60 saat untuk status tugasan aktif semasa
+    setInterval(() => {
+      renderDashboard();
+      renderTasksList();
+    }, 60000);
 
     // Inisialisasi Cloud Database Sync
     if (window.Storage && window.Storage.initCloudSync) {
@@ -1667,12 +1818,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingTasks = tasks.filter(t => !t.completed);
     if (pendingTasks.length > 0) {
       const nextTask = pendingTasks[0];
+      const isLive = isTaskCurrentlyOngoing(nextTask);
       const catDisplay = window.I18N ? window.I18N.formatCategory(nextTask.category) : nextTask.category;
       nextTaskContainer.innerHTML = `
-        <div class="task-card" style="border-left: 3px solid var(--primary);">
+        <div class="task-card" style="border-left: 3px solid ${isLive ? '#10b981' : 'var(--primary)'}; ${isLive ? 'box-shadow: 0 0 20px rgba(16,185,129,0.25);' : ''}">
           <div class="task-top">
             <div class="task-details">
-              <div class="task-title">${escapeHtml(nextTask.title)}</div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+                <div class="task-title" style="margin-bottom:0;">${escapeHtml(nextTask.title)}</div>
+                ${isLive ? `<span class="badge-live-pulse"><span class="pulse-dot"></span> ${window.I18N && window.I18N.getLanguage() === 'en' ? 'LIVE NOW' : 'AKTIF SEKARANG'}</span>` : ''}
+              </div>
               ${nextTask.notes ? `<div class="task-notes">${escapeHtml(nextTask.notes)}</div>` : ''}
               <div class="task-meta">
                 <span class="badge badge-time">⏰ ${nextTask.startTime} - ${nextTask.endTime}</span>
@@ -1699,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    // Matlamat Hari Ini Ringkas
+    // Matlamat Hari Ini Ringkas (Dashboard)
     dashboardGoalsList.innerHTML = goals.map(g => {
       const isDone = g.completedToday || (g.actualMinutesSpent >= g.allocatedMinutes);
       return `
@@ -1708,11 +1863,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="goal-title" style="font-size: 0.9rem;">${escapeHtml(g.title)}</div>
             <div class="streak-pill">🔥 ${g.streakDays || 0}d</div>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:6px;">
             <span>${t('dailyAllocation')}: ${window.TimeEngine.formatDuration(g.allocatedMinutes)} / ${t('perDay')}</span>
-            <span class="badge ${isDone ? 'badge-priority-tinggi' : 'badge-duration'}" style="${isDone ? 'background:rgba(16,185,129,0.2); color:#34d399;' : ''}">
-              ${isDone ? t('completedToday') : t('notCompleted')}
-            </span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="badge ${isDone ? 'badge-priority-tinggi' : 'badge-duration'}" style="${isDone ? 'background:rgba(16,185,129,0.2); color:#34d399;' : ''}">
+                ${isDone ? t('completedToday') : `${g.actualMinutesSpent || 0}/${g.allocatedMinutes}m`}
+              </span>
+              <button class="btn-goal-quick-add" data-quick-goal="${g.id}" data-mins="15" title="Tambah 15 minit">+15m</button>
+            </div>
           </div>
         </div>
       `;
@@ -1752,13 +1910,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const priorityClass = `badge-priority-${(taskItem.priority || 'sederhana').toLowerCase()}`;
       const priorityDisplay = window.I18N ? window.I18N.formatPriority(taskItem.priority) : taskItem.priority;
       const categoryDisplay = window.I18N ? window.I18N.formatCategory(taskItem.category) : taskItem.category;
+      const isLive = isTaskCurrentlyOngoing(taskItem);
 
       return `
-        <div class="task-card ${taskItem.completed ? 'completed' : ''}" data-id="${taskItem.id}">
+        <div class="task-card ${taskItem.completed ? 'completed' : ''}" data-id="${taskItem.id}" style="${isLive ? 'border-left: 3px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);' : ''}">
           <div class="task-top">
             <input type="checkbox" class="custom-checkbox task-check" data-id="${taskItem.id}" ${taskItem.completed ? 'checked' : ''}>
             <div class="task-details">
-              <div class="task-title">${escapeHtml(taskItem.title)}</div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap;">
+                <div class="task-title" style="margin-bottom:0;">${escapeHtml(taskItem.title)}</div>
+                ${isLive ? `<span class="badge-live-pulse"><span class="pulse-dot"></span> ${window.I18N && window.I18N.getLanguage() === 'en' ? 'LIVE NOW' : 'AKTIF SEKARANG'}</span>` : ''}
+              </div>
               ${taskItem.notes ? `<div class="task-notes">${escapeHtml(taskItem.notes)}</div>` : ''}
               <div class="task-meta">
                 <span class="badge badge-time">⏰ ${taskItem.startTime} - ${taskItem.endTime}</span>
@@ -1825,11 +1987,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="progress-fill" style="width: ${percent}%; ${isDone ? 'background:#10b981;' : ''}"></div>
           </div>
 
-          <div class="goal-footer">
+          <div class="goal-footer" style="flex-wrap:wrap; gap:8px;">
             <span style="font-size: 0.75rem; color: var(--text-muted);">
               ${t('timeSpent')}: <strong style="color: #fff;">${g.actualMinutesSpent || 0}m</strong> / ${g.allocatedMinutes}m
             </span>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="btn-goal-quick-add" data-quick-goal="${g.id}" data-mins="15" title="Tambah 15 minit">+15m</button>
+              <button class="btn-goal-quick-add" data-quick-goal="${g.id}" data-mins="30" title="Tambah 30 minit">+30m</button>
               <button class="btn-focus" data-focus-goal="${g.id}">
                 ${t('goalSession')}
               </button>
@@ -2001,6 +2165,29 @@ document.addEventListener('DOMContentLoaded', () => {
     goalHoursInput.addEventListener('input', updateLiveGoalCalculation);
     goalDaysInput.addEventListener('change', updateLiveGoalCalculation);
 
+    // Butang Pintas Durasi Pantas (+15m, +30m, +45m, +1j, +1j 30m, +2j)
+    const presetPillsContainer = document.getElementById('task-duration-presets');
+    if (presetPillsContainer) {
+      presetPillsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.preset-pill');
+        if (!btn) return;
+        const mins = parseInt(btn.dataset.mins, 10);
+        if (!mins) return;
+
+        presetPillsContainer.querySelectorAll('.preset-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+
+        const startVal = taskStartInput.value || '09:00';
+        const startMins = window.TimeEngine.timeToMinutes(startVal);
+        const endMins = startMins + mins;
+        taskEndInput.value = window.TimeEngine.minutesToTime(endMins);
+
+        updateLiveTaskDuration();
+        triggerHaptic([25]);
+        playAudioChime('pop');
+      });
+    }
+
     // Simpan Tugasan (Borang)
     formTask.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -2125,8 +2312,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Tindakan Pada Senarai Matlamat (Delete & Focus)
+    // Tindakan Pada Dashboard Matlamat (Pintas Tambah Masa)
+    dashboardGoalsList.addEventListener('click', (e) => {
+      const qBtn = e.target.closest('[data-quick-goal]');
+      if (qBtn) {
+        const id = qBtn.dataset.quickGoal;
+        const mins = parseInt(qBtn.dataset.mins, 10) || 15;
+        addGoalQuickMinutes(id, mins);
+      }
+    });
+
+    // Tindakan Pada Senarai Matlamat (Delete, Focus & Pintas Tambah Masa)
     goalsListContainer.addEventListener('click', (e) => {
+      const qBtn = e.target.closest('[data-quick-goal]');
+      if (qBtn) {
+        const id = qBtn.dataset.quickGoal;
+        const mins = parseInt(qBtn.dataset.mins, 10) || 15;
+        addGoalQuickMinutes(id, mins);
+        return;
+      }
+
       const delBtn = e.target.closest('[data-delete-goal]');
       if (delBtn) {
         const id = delBtn.dataset.deleteGoal;
@@ -2152,7 +2357,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Eksport & Import Data
-    btnExportData.addEventListener('click', () => window.Storage.exportDataJSON());
+    btnExportData.addEventListener('click', () => {
+      window.Storage.exportDataJSON();
+      showToast('Fail sandaran data JSON dimuat turun! 💾', 'success');
+      playAudioChime('success');
+    });
     btnImportTrigger.addEventListener('click', () => fileImportInput.click());
 
     fileImportInput.addEventListener('change', (e) => {
@@ -2163,10 +2372,11 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.onload = (event) => {
         const success = window.Storage.importDataJSON(event.target.result);
         if (success) {
-          alert(t('importSuccess'));
+          showToast(t('importSuccess') || 'Data berjaya diimport! 📥', 'success');
+          playAudioChime('complete');
           renderAll();
         } else {
-          alert(t('importError'));
+          showToast(t('importError') || 'Ralat mengimport fail data', 'warning');
         }
       };
       reader.readAsText(file);
@@ -2283,6 +2493,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.Storage.saveTasks(tasks);
     modalTask.classList.remove('active');
     renderAll();
+
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+    showToast(editId ? (isEn ? 'Task updated! ⚡' : 'Tugasan dikemaskini! ⚡') : (isEn ? 'New task added! ⚡' : 'Tugasan berjaya ditambah! ⚡'), 'success');
+    playAudioChime('success');
+    triggerHaptic([30, 40]);
   }
 
   // Simpan Matlamat Baru
@@ -2311,6 +2526,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.Storage.saveGoals(goals);
     modalGoal.classList.remove('active');
     renderAll();
+
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+    showToast(isEn ? 'New goal added! 🎯' : 'Matlamat berjaya ditambah! 🎯', 'success');
+    playAudioChime('success');
+    triggerHaptic([30, 40]);
   }
 
   // Togol Siap Tugasan
@@ -2323,6 +2543,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       window.Storage.saveTasks(tasks);
       renderAll();
+
+      if (isCompleted) {
+        const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+        showToast(isEn ? 'Task completed! 🎉' : 'Tahniah! Tugasan telah diselesaikan! 🎉', 'success');
+        playAudioChime('complete');
+        triggerHaptic([40, 30, 50]);
+      }
     }
   }
 
@@ -2419,7 +2646,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.Timer.onComplete((state) => {
-      alert(`⏱️ ${t('timerFinishedAlert')}: ${state.item ? state.item.title : 'Focus Session'}! ${t('sessionLogged')}`);
+      const itemTitle = state.item ? state.item.title : 'Focus Session';
+      showToast(`⏱️ ${t('timerFinishedAlert')}: ${itemTitle}!`, 'success');
+      playAudioChime('complete');
+      triggerHaptic([60, 50, 60, 50, 80]);
       window.Timer.finishCurrentSession();
       modalTimer.classList.remove('active');
       miniTimerWidget.classList.remove('active');
