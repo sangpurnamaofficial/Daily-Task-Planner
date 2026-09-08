@@ -237,7 +237,10 @@ const TimeEngine = {
   }
 };
 
-// Export ke window untuk kegunaan global dalam pelayar
+// Export ke window untuk kegunaan global dalam pelayar & CommonJS untuk Node.js
 if (typeof window !== 'undefined') {
   window.TimeEngine = TimeEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = TimeEngine;
 }

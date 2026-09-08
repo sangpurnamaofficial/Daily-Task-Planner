@@ -171,7 +171,32 @@ const I18N = {
       signupSuccessMsg: 'Akaun anda berjaya dicipta!',
       logoutSuccessMsg: 'Anda telah log keluar.',
       errFillAll: 'Sila lengkapkan semua ruangan.',
-      errPassTooShort: 'Kata laluan mestilah sekurang-kurangnya 6 aksara.'
+      errPassTooShort: 'Kata laluan mestilah sekurang-kurangnya 6 aksara.',
+
+      // AI Scheduler & Optimization
+      aiSchedulerTitle: 'Pembantu Jadual Pintar AI',
+      aiSchedulerSub: 'Masukkan senarai tugasan mentah, AI akan susun masa mula/tamat & beri cadangan penjimatan masa.',
+      aiPromptPlaceholder: 'Taip atau tampal apa sahaja senarai tugasan di sini...\nCth:\n- Jogging 30 minit\n- Meeting client pukul 2 petang (1 jam)\n- Siapkan proposal slide 1 jam\n- Balas emel penting\n- Basuh kereta',
+      aiStartTimeLabel: 'Waktu Mula',
+      aiUseCurrentTime: 'Waktu Sekarang',
+      aiPacingLabel: 'Gaya Kerja (Pacing)',
+      aiPacingBalanced: '⚖️ Seimbang (Rehat 10m)',
+      aiPacingDeepWork: '🚀 Deep Work (Tugasan Berat Pagi)',
+      aiPacingPomodoro: '🍅 Pomodoro (Blok 25-50m)',
+      aiBufferLabel: 'Masa Rehat Antara Tugasan',
+      aiBtnGenerate: '✨ Jana Jadual Pintar AI',
+      aiGenerating: 'AI Sedang Menganalisis & Menyusun...',
+      aiSummaryHeader: 'Ringkasan Jadual AI',
+      aiTotalFocus: 'Jumlah Fokus',
+      aiProjectedEnd: 'Anggaran Tamat',
+      aiTimeSaved: 'Penjimatan Masa',
+      aiOptimizeAllBtn: '⚡ Terapkan Semua Cadangan AI',
+      aiApplyToScheduleBtn: '✅ Terapkan ke Jadual Harian Saya',
+      aiRegenerateBtn: '🔄 Jana Semula',
+      aiTemplateBusyWork: '💼 Hari Kerja Sibuk',
+      aiTemplateStudy: '📚 Ulang Kaji / Belajar',
+      aiTemplateWeekend: '✨ Hujung Minggu Santai',
+      aiSuccessApplied: 'Jadual AI berjaya diterapkan ke senarai tugasan anda!'
     },
 
     en: {
@@ -338,7 +363,32 @@ const I18N = {
       signupSuccessMsg: 'Account created successfully!',
       logoutSuccessMsg: 'You have signed out.',
       errFillAll: 'Please fill in all required fields.',
-      errPassTooShort: 'Password must be at least 6 characters.'
+      errPassTooShort: 'Password must be at least 6 characters.',
+
+      // AI Scheduler & Optimization
+      aiSchedulerTitle: 'AI Smart Schedule Architect',
+      aiSchedulerSub: 'Input a raw task list, AI will calculate sequential start/end times & suggest time optimizations.',
+      aiPromptPlaceholder: 'Type or paste any tasks or brain dump here...\nE.g.:\n- Jogging 30 minutes\n- Client meeting at 2:00 PM (1 hour)\n- Finish proposal slides 1 hour\n- Reply critical emails\n- Wash car',
+      aiStartTimeLabel: 'Start Time',
+      aiUseCurrentTime: 'Use Current Time',
+      aiPacingLabel: 'Work Pacing Style',
+      aiPacingBalanced: '⚖️ Balanced (10m Break)',
+      aiPacingDeepWork: '🚀 Deep Work (Heavy Tasks First)',
+      aiPacingPomodoro: '🍅 Pomodoro (25-50m Blocks)',
+      aiBufferLabel: 'Rest Buffer Between Tasks',
+      aiBtnGenerate: '✨ Generate AI Schedule',
+      aiGenerating: 'AI is Analyzing & Scheduling...',
+      aiSummaryHeader: 'AI Schedule Summary',
+      aiTotalFocus: 'Total Focus',
+      aiProjectedEnd: 'Projected Finish',
+      aiTimeSaved: 'Time Saved',
+      aiOptimizeAllBtn: '⚡ Apply All AI Suggestions',
+      aiApplyToScheduleBtn: '✅ Apply to My Daily Schedule',
+      aiRegenerateBtn: '🔄 Regenerate',
+      aiTemplateBusyWork: '💼 Busy Work Day',
+      aiTemplateStudy: '📚 Study & Exam Prep',
+      aiTemplateWeekend: '✨ Relaxed Weekend',
+      aiSuccessApplied: 'AI schedule successfully applied to your daily planner!'
     }
   },
 

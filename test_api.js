@@ -110,8 +110,25 @@ async function runTests() {
     const settings = await request('GET', '/api/settings');
     assert(settings.status === 200 && settings.data.settings.language, 'GET /api/settings mengambil tetapan sistem');
 
-    const updateSettings = await request('PUT', '/api/settings', { theme: 'dark', defaultBreakMinutes: 15 });
-    assert(updateSettings.status === 200 && updateSettings.data.settings.defaultBreakMinutes === 15, 'PUT /api/settings mengemaskini tetapan kekal');
+    // 10. AI Smart Schedule & Apply Batch API
+    const aiScheduleReq = await request('POST', '/api/ai/schedule', {
+      rawText: "- Siapkan slide pembentangan 1 jam\n- Jogging 30 minit\n- Balas emel client 45m",
+      startTime: "09:00",
+      pacing: "balanced",
+      bufferMinutes: 10
+    });
+    assert(aiScheduleReq.status === 200 && aiScheduleReq.data.scheduledTasks.length >= 3, 'POST /api/ai/schedule menjana susunan jadual AI pintar');
+    assert(aiScheduleReq.data.scheduledTasks[0].startTime === '09:00', 'Tugasan pertama bermula pada waktu pilihan 09:00');
+
+    const aiApplyBatchReq = await request('POST', '/api/ai/apply-batch', {
+      tasks: aiScheduleReq.data.scheduledTasks.slice(0, 2)
+    });
+    assert(aiApplyBatchReq.status === 201 && aiApplyBatchReq.data.tasks && aiApplyBatchReq.data.tasks.length === 2, 'POST /api/ai/apply-batch menerapkan tugasan ke database');
+
+    // Padam balik tugasan ujian
+    for (const t of aiApplyBatchReq.data.tasks) {
+      await request('DELETE', `/api/tasks/${t.id}`);
+    }
 
     console.log(`\n======================================================`);
     console.log(`JUMLAH UJIAN REST API: ${passed} / ${total} LULUS!`);

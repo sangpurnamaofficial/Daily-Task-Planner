@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const db = require('./db');
+const aiEngine = require('./aiEngine');
 
 const PORT = process.env.PORT || 3000;
 const BASE_DIR = __dirname;
@@ -276,6 +277,55 @@ const server = http.createServer(async (req, res) => {
       if (pathname === '/api/reset' && req.method === 'POST') {
         const resetData = db.resetToDefaults(userId);
         return sendJSON(res, 200, { success: true, message: 'Pangkalan data telah dipulihkan', data: resetData });
+      }
+
+      // 7. AI Smart Schedule & Optimization API
+      if (pathname === '/api/ai/schedule' && req.method === 'POST') {
+        const body = await parseBody(req);
+        if (!body.rawText || typeof body.rawText !== 'string' || !body.rawText.trim()) {
+          return sendJSON(res, 400, { success: false, error: 'Teks tugasan diperlukan untuk penjadualan AI' });
+        }
+        const scheduleResult = await aiEngine.generateSmartSchedule({
+          rawText: body.rawText,
+          startTime: body.startTime || '09:00',
+          endTime: body.endTime || '18:00',
+          pacing: body.pacing || 'balanced',
+          bufferMinutes: typeof body.bufferMinutes === 'number' ? body.bufferMinutes : 10,
+          includeBreaks: body.includeBreaks !== false,
+          applySuggestions: Boolean(body.applySuggestions),
+          apiKey: body.apiKey || process.env.GEMINI_API_KEY || null
+        });
+        return sendJSON(res, 200, scheduleResult);
+      }
+
+      if (pathname === '/api/ai/apply-batch' && req.method === 'POST') {
+        const body = await parseBody(req);
+        const tasksToApply = Array.isArray(body.tasks) ? body.tasks : [];
+        if (tasksToApply.length === 0) {
+          return sendJSON(res, 400, { success: false, error: 'Tiada tugasan untuk diterapkan' });
+        }
+
+        const createdTasks = [];
+        for (const t of tasksToApply) {
+          if (!t.title) continue;
+          const created = db.addTask({
+            title: t.title,
+            category: t.category || 'Kerja',
+            priority: t.priority || 'Sederhana',
+            startTime: t.startTime || '09:00',
+            endTime: t.endTime || '10:00',
+            durationMinutes: t.durationMinutes || 30,
+            notes: t.notes || (t.isBreak ? 'Slot Rehat Berjadual AI' : 'Dijana oleh Pembantu Jadual Pintar AI'),
+            completed: false
+          }, userId);
+          createdTasks.push(created);
+        }
+
+        return sendJSON(res, 201, {
+          success: true,
+          message: `Berjaya menerapkan ${createdTasks.length} tugasan ke jadual anda`,
+          tasks: createdTasks
+        });
       }
 
       // Route API tidak ditemui

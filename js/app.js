@@ -2007,6 +2007,374 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll();
   }
 
+  // ================= MODUL 5: PEMBANTU JADUAL PINTAR AI =================
+  const modalAi = document.getElementById('modal-ai-schedule');
+  const btnOpenAiHeader = document.getElementById('btn-open-ai-schedule');
+  const btnOpenAiTasks = document.getElementById('btn-tasks-ai-schedule');
+  const btnOpenAiDrawer = document.getElementById('drawer-btn-ai-schedule');
+  const btnCloseAi = document.getElementById('btn-x-close-ai');
+
+  const aiInputSection = document.getElementById('ai-input-section');
+  const aiLoadingSection = document.getElementById('ai-loading-section');
+  const aiResultsSection = document.getElementById('ai-results-section');
+
+  const aiRawTextInput = document.getElementById('ai-input-raw-text');
+  const aiStartTimeInput = document.getElementById('ai-input-start-time');
+  const aiPacingSelect = document.getElementById('ai-select-pacing');
+  const btnAiUseNow = document.getElementById('btn-ai-use-now');
+  const btnAiGenerate = document.getElementById('btn-ai-generate-schedule');
+
+  const aiResTotalFocus = document.getElementById('ai-res-total-focus');
+  const aiResProjectedEnd = document.getElementById('ai-res-projected-end');
+  const aiBoxSavings = document.getElementById('ai-box-savings');
+  const aiResTimeSaved = document.getElementById('ai-res-time-saved');
+  const aiCoachTipText = document.getElementById('ai-coach-tip-text');
+  const aiGlobalActions = document.getElementById('ai-global-actions');
+  const btnAiOptimizeAll = document.getElementById('btn-ai-optimize-all');
+  const aiPreviewTasksList = document.getElementById('ai-preview-tasks-list');
+  const btnApplyAiSchedule = document.getElementById('btn-apply-ai-schedule');
+  const btnAiBackToInput = document.getElementById('btn-ai-back-to-input');
+
+  let currentAiScheduleResult = null;
+
+  const AI_TEMPLATES = {
+    work: "- Review PR dan semak isu bug\n- Siapkan pembentangan projek Alpha (1 jam)\n- Mesyuarat koordinasi klien pukul 2 petang\n- Balas emel dan semak invois (45m)\n- Refleksi kerja & perancangan esok",
+    study: "- Baca bab 4 buku rujukan (45m)\n- Buat nota ringkas & peta minda (30m)\n- Ulang kaji latihan peperiksaan 1 jam\n- Tonton video tutorial koding (40m)\n- Uji kaji soalan lepas (30m)",
+    weekend: "- Jogging kat taman rekreasi 40 minit\n- Sarapan santai bersama keluarga (45m)\n- Basuh kereta dan kemas laman\n- Beli barang dapur kat pasar raya 1 jam\n- Tonton wayang & santai malam"
+  };
+
+  function getRoundedCurrentTime() {
+    const now = new Date();
+    let mins = now.getMinutes();
+    let hrs = now.getHours();
+    mins = Math.ceil(mins / 5) * 5;
+    if (mins >= 60) {
+      mins = 0;
+      hrs = (hrs + 1) % 24;
+    }
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+  }
+
+  function openAiModal() {
+    if (drawerOverlay) drawerOverlay.classList.remove('active');
+    if (modalAi) {
+      if (aiStartTimeInput) {
+        aiStartTimeInput.value = getRoundedCurrentTime();
+      }
+      if (!currentAiScheduleResult) {
+        showAiSection('input');
+      }
+      modalAi.classList.add('active');
+      triggerHaptic([20]);
+    }
+  }
+
+  function closeAiModal() {
+    if (modalAi) modalAi.classList.remove('active');
+  }
+
+  function showAiSection(section) {
+    if (aiInputSection) aiInputSection.style.display = (section === 'input') ? 'block' : 'none';
+    if (aiLoadingSection) aiLoadingSection.style.display = (section === 'loading') ? 'block' : 'none';
+    if (aiResultsSection) aiResultsSection.style.display = (section === 'results') ? 'block' : 'none';
+  }
+
+  async function handleAiGenerate(applySuggestions = false) {
+    const rawText = aiRawTextInput ? aiRawTextInput.value.trim() : '';
+
+    if (!rawText) {
+      showToast('Sila masukkan senarai tugasan atau teks harian anda.', 'warning');
+      if (aiRawTextInput) aiRawTextInput.focus();
+      return;
+    }
+
+    const startTime = aiStartTimeInput ? aiStartTimeInput.value : '09:00';
+    const pacing = aiPacingSelect ? aiPacingSelect.value : 'balanced';
+
+    showAiSection('loading');
+    triggerHaptic([30]);
+
+    try {
+      const resp = await fetch('/api/ai/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rawText,
+          startTime,
+          pacing,
+          bufferMinutes: 10,
+          includeBreaks: true,
+          applySuggestions
+        })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        throw new Error(data.error || 'Gagal menjana jadual AI');
+      }
+
+      currentAiScheduleResult = data;
+      renderAiPreview(data);
+      showAiSection('results');
+      playAudioChime('chime');
+      triggerHaptic([40, 60]);
+    } catch (err) {
+      console.error('Ralat AI Scheduler:', err);
+      showAiSection('input');
+      showToast('Ralat: ' + err.message, 'warning');
+    }
+  }
+
+  function renderAiPreview(result) {
+    if (!result || !result.scheduledTasks) return;
+
+    const { scheduledTasks, summary } = result;
+
+    if (aiResTotalFocus) aiResTotalFocus.textContent = summary.totalFocusFormatted || `${summary.totalFocusMinutes}m`;
+    if (aiResProjectedEnd) aiResProjectedEnd.textContent = window.TimeEngine ? window.TimeEngine.formatTime12Hour(summary.projectedEndTime) : summary.projectedEndTime;
+
+    if (aiBoxSavings && aiResTimeSaved) {
+      if (summary.totalSavedMinutes > 0) {
+        aiBoxSavings.style.display = 'block';
+        aiResTimeSaved.textContent = `+${summary.totalSavedMinutes}m`;
+      } else {
+        aiBoxSavings.style.display = 'none';
+      }
+    }
+
+    if (aiCoachTipText) {
+      aiCoachTipText.textContent = summary.productivityTip || 'Jadual anda telah dioptimumkan secara seimbang tanpa pertembungan masa.';
+    }
+
+    const hasUnappliedSavings = scheduledTasks.some(t => 
+      t.suggestions && t.suggestions.some(s => s.timeSavedMinutes > 0 && (!t.appliedSuggestion || t.appliedSuggestion.type !== s.type))
+    );
+
+    if (aiGlobalActions) {
+      aiGlobalActions.style.display = hasUnappliedSavings ? 'block' : 'none';
+    }
+
+    if (aiPreviewTasksList) {
+      aiPreviewTasksList.innerHTML = '';
+
+      scheduledTasks.forEach((task, idx) => {
+        const card = document.createElement('div');
+        card.className = `ai-task-preview-card ${task.isBreak ? 'is-break-card' : ''}`;
+
+        const topRow = document.createElement('div');
+        topRow.className = 'ai-preview-top-row';
+
+        const titleSpan = document.createElement('div');
+        titleSpan.className = 'ai-preview-title';
+        titleSpan.textContent = task.title;
+
+        const timePill = document.createElement('div');
+        timePill.className = 'ai-preview-time-pill';
+        const start12 = window.TimeEngine ? window.TimeEngine.formatTime12Hour(task.startTime) : task.startTime;
+        const end12 = window.TimeEngine ? window.TimeEngine.formatTime12Hour(task.endTime) : task.endTime;
+        timePill.textContent = `${start12} - ${end12} (${task.durationMinutes}m)`;
+
+        topRow.appendChild(titleSpan);
+        topRow.appendChild(timePill);
+        card.appendChild(topRow);
+
+        const badgeRow = document.createElement('div');
+        badgeRow.className = 'ai-preview-badges';
+        badgeRow.innerHTML = `
+          <span class="task-category-tag category-${(task.category || 'other').toLowerCase()}">${task.category || 'Kerja'}</span>
+          <span class="badge ${task.priority === 'Tinggi' ? 'badge-danger' : (task.priority === 'Rendah' ? 'badge-muted' : 'badge-warning')}">${task.priority || 'Sederhana'}</span>
+        `;
+        card.appendChild(badgeRow);
+
+        if (task.suggestions && task.suggestions.length > 0 && !task.isBreak) {
+          const sug = task.suggestions[0];
+          const isApplied = task.appliedSuggestion && task.appliedSuggestion.type === sug.type;
+
+          const sugChip = document.createElement('div');
+          sugChip.className = 'ai-suggestion-chip';
+          sugChip.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>${sug.icon || '💡'}</span>
+              <span><strong>${sug.title}</strong>: ${sug.message}</span>
+            </div>
+          `;
+
+          if (sug.suggestedDuration && sug.suggestedDuration !== task.durationMinutes) {
+            const applyBtn = document.createElement('button');
+            applyBtn.type = 'button';
+            applyBtn.className = `btn-chip-apply ${isApplied ? 'applied' : ''}`;
+            applyBtn.textContent = isApplied ? '✓ Dioptimumkan' : `⚡ Guna (${sug.suggestedDuration}m)`;
+            if (!isApplied) {
+              applyBtn.onclick = () => {
+                applySingleSuggestion(idx, sug);
+              };
+            }
+            sugChip.appendChild(applyBtn);
+          }
+
+          card.appendChild(sugChip);
+        }
+
+        aiPreviewTasksList.appendChild(card);
+      });
+    }
+  }
+
+  function applySingleSuggestion(taskIndex, suggestion) {
+    if (!currentAiScheduleResult || !currentAiScheduleResult.scheduledTasks) return;
+
+    const tasks = currentAiScheduleResult.scheduledTasks;
+    if (!tasks[taskIndex]) return;
+
+    tasks[taskIndex].durationMinutes = suggestion.suggestedDuration;
+    tasks[taskIndex].appliedSuggestion = suggestion;
+
+    recalculateScheduledCascade();
+    triggerHaptic([30]);
+  }
+
+  function recalculateScheduledCascade() {
+    if (!currentAiScheduleResult || !currentAiScheduleResult.scheduledTasks) return;
+
+    const startTime = currentAiScheduleResult.summary.startTime || '09:00';
+    const buffer = 10;
+    let currentMins = window.TimeEngine.timeToMinutes(startTime);
+
+    currentAiScheduleResult.scheduledTasks = currentAiScheduleResult.scheduledTasks.map((t, idx) => {
+      if (t.isFixedAnchor && t.fixedTime) {
+        const anchorMins = window.TimeEngine.timeToMinutes(t.fixedTime);
+        if (anchorMins >= currentMins) currentMins = anchorMins;
+      }
+
+      const sTime = window.TimeEngine.minutesToTime(currentMins);
+      const eMins = currentMins + t.durationMinutes;
+      const eTime = window.TimeEngine.minutesToTime(eMins);
+
+      currentMins = eMins;
+      if (idx < currentAiScheduleResult.scheduledTasks.length - 1) {
+        currentMins += buffer;
+      }
+
+      return {
+        ...t,
+        startTime: sTime,
+        endTime: eTime
+      };
+    });
+
+    const totalFocus = currentAiScheduleResult.scheduledTasks
+      .filter(t => !t.isBreak)
+      .reduce((sum, t) => sum + t.durationMinutes, 0);
+
+    const totalSaved = currentAiScheduleResult.scheduledTasks
+      .filter(t => t.appliedSuggestion && t.appliedSuggestion.timeSavedMinutes)
+      .reduce((sum, t) => sum + t.appliedSuggestion.timeSavedMinutes, 0);
+
+    currentAiScheduleResult.summary.totalFocusMinutes = totalFocus;
+    currentAiScheduleResult.summary.totalFocusFormatted = window.TimeEngine.formatDuration(totalFocus);
+    currentAiScheduleResult.summary.projectedEndTime = window.TimeEngine.minutesToTime(currentMins);
+    currentAiScheduleResult.summary.totalSavedMinutes = totalSaved;
+
+    renderAiPreview(currentAiScheduleResult);
+  }
+
+  async function handleApplyAiSchedule() {
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+    if (!currentAiScheduleResult || !currentAiScheduleResult.scheduledTasks || currentAiScheduleResult.scheduledTasks.length === 0) {
+      showToast('Tiada tugasan untuk diterapkan.', 'warning');
+      return;
+    }
+
+    btnApplyAiSchedule.disabled = true;
+    btnApplyAiSchedule.textContent = 'Menyimpan...';
+
+    try {
+      const resp = await fetch('/api/ai/apply-batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': window.Storage.getAuthToken() ? `Bearer ${window.Storage.getAuthToken()}` : ''
+        },
+        body: JSON.stringify({
+          tasks: currentAiScheduleResult.scheduledTasks
+        })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        throw new Error(data.error || 'Gagal menyimpan tugasan AI');
+      }
+
+      if (window.Storage && window.Storage.fetchCloudData) {
+        await window.Storage.fetchCloudData();
+      }
+      tasks = window.Storage.getTasks();
+      goals = window.Storage.getGoals();
+      settings = window.Storage.getSettings();
+
+      renderAll();
+      closeAiModal();
+      showToast(t('aiSuccessApplied'), 'success');
+      playAudioChime('chime');
+      triggerHaptic([50, 80, 50]);
+
+      switchTab('tab-tasks');
+    } catch (err) {
+      console.error('Ralat apply AI batch:', err);
+      showToast('Ralat: ' + err.message, 'warning');
+    } finally {
+      btnApplyAiSchedule.disabled = false;
+      btnApplyAiSchedule.textContent = t('aiApplyToScheduleBtn');
+    }
+  }
+
+  function bindAiScheduleEvents() {
+    if (btnOpenAiHeader) btnOpenAiHeader.addEventListener('click', openAiModal);
+    if (btnOpenAiTasks) btnOpenAiTasks.addEventListener('click', openAiModal);
+    if (btnOpenAiDrawer) btnOpenAiDrawer.addEventListener('click', openAiModal);
+    if (btnCloseAi) btnCloseAi.addEventListener('click', closeAiModal);
+
+    document.querySelectorAll('.ai-template-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const type = pill.dataset.template;
+        if (AI_TEMPLATES[type] && aiRawTextInput) {
+          aiRawTextInput.value = AI_TEMPLATES[type];
+          triggerHaptic([20]);
+        }
+      });
+    });
+
+    if (btnAiUseNow) {
+      btnAiUseNow.addEventListener('click', () => {
+        if (aiStartTimeInput) {
+          aiStartTimeInput.value = getRoundedCurrentTime();
+          triggerHaptic([20]);
+        }
+      });
+    }
+
+    if (btnAiGenerate) {
+      btnAiGenerate.addEventListener('click', () => handleAiGenerate(false));
+    }
+
+    if (btnAiBackToInput) {
+      btnAiBackToInput.addEventListener('click', () => {
+        showAiSection('input');
+        triggerHaptic([20]);
+      });
+    }
+
+    if (btnAiOptimizeAll) {
+      btnAiOptimizeAll.addEventListener('click', () => {
+        handleAiGenerate(true);
+      });
+    }
+
+    if (btnApplyAiSchedule) {
+      btnApplyAiSchedule.addEventListener('click', handleApplyAiSchedule);
+    }
+  }
+
   // ================= INISIALISASI =================
   function initApp() {
     updateLanguagePills();
@@ -2016,6 +2384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     bindTimerEvents();
     bindSwipeToDismiss();
+    bindAiScheduleEvents();
 
     // Sediakan status auth awal
     updateAuthUI(window.Storage.getAuthUser());
