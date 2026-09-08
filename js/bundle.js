@@ -3733,6 +3733,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiInputSection) aiInputSection.style.display = (section === 'input') ? 'block' : 'none';
     if (aiLoadingSection) aiLoadingSection.style.display = (section === 'loading') ? 'block' : 'none';
     if (aiResultsSection) aiResultsSection.style.display = (section === 'results') ? 'block' : 'none';
+    if (modalAi) {
+      const sheet = modalAi.querySelector('.modal-sheet');
+      if (sheet) sheet.scrollTop = 0;
+    }
   }
 
   function appendChatMessage(role, text) {
