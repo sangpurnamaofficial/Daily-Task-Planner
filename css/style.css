@@ -2129,28 +2129,48 @@ body::before {
   }
 }
 
-/* Desktop Widescreen Specifics (>= 900px) */
+/* Desktop Widescreen Specifics (>= 900px) - Full-Width Edge-to-Edge Layout */
 @media (min-width: 900px) {
   :root {
-    --app-max-width: 1200px;
+    --app-max-width: 100%;
+  }
+
+  body {
+    align-items: stretch !important;
+  }
+
+  body::before {
+    width: 100%;
+    max-width: 1600px;
+    height: 500px;
   }
 
   .app-container {
-    max-width: var(--app-max-width);
-    border-left: 1px solid var(--border-glass);
-    border-right: 1px solid var(--border-glass);
-    box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+    width: 100% !important;
+    max-width: 100% !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
     padding-bottom: 50px;
-    margin: 0 auto;
+    margin: 0 !important;
   }
 
   .app-header {
-    padding: 16px 36px;
-    gap: 20px;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px clamp(24px, 3vw, 48px) !important;
+    gap: 24px;
+    border-bottom: 1px solid var(--border-glass);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 40;
   }
 
   .brand-info h1 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
   }
 
   /* Desktop Navigation in Top Header */
@@ -2168,12 +2188,12 @@ body::before {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 8px 18px;
     border-radius: var(--radius-full);
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -2210,15 +2230,33 @@ body::before {
   .desktop-actions {
     display: flex !important;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
-  /* Dashboard 2-Column Grid on Desktop (Rebalanced) */
+  /* Main Content: Fluid edge-to-edge with comfortable modern breathing room */
+  .main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px clamp(24px, 3vw, 48px) !important;
+    box-sizing: border-box;
+  }
+
+  /* Desktop KPI Metric Bar (4 Cards stretch across full width) */
+  .desktop-kpi-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 18px;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+
+  /* Dashboard 2-Column Grid on Desktop (Fluid Edge-to-Edge) */
   .dashboard-grid {
     display: grid !important;
-    grid-template-columns: 1.12fr 0.88fr;
+    grid-template-columns: 1.15fr 0.85fr !important;
     gap: 24px;
     align-items: start;
+    width: 100%;
   }
 
   .filter-bar {
@@ -2229,12 +2267,36 @@ body::before {
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
+    width: 100%;
   }
 
   .goals-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+    gap: 18px;
+    width: 100%;
+  }
+
+  /* Desktop FAB pinned to bottom-right of viewport */
+  .fab-btn {
+    right: 36px !important;
+    bottom: 36px !important;
+  }
+
+  /* Modals on desktop: centered dialogs rather than stretched sheets */
+  .modal-overlay {
+    align-items: center !important;
+  }
+
+  .modal-sheet {
+    max-width: 540px !important;
+    border-radius: var(--radius-lg) !important;
+    margin: auto !important;
+    max-height: 85vh !important;
+  }
+
+  .modal-sheet-ai {
+    max-width: 720px !important;
   }
 }
 
