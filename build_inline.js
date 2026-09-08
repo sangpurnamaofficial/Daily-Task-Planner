@@ -63,8 +63,8 @@ if (scriptRegex.test(html)) {
 }
 
 // Bump version query params in index.html to bust aggressive browser caches
-html = html.replace(/style\.css\?v=[^"]+/g, 'style.css?v=6.0');
-html = html.replace(/bundle\.js\?v=[^"]+/g, 'bundle.js?v=6.0');
+html = html.replace(/style\.css\?v=[^"]+/g, 'style.css?v=7.0');
+html = html.replace(/bundle\.js\?v=[^"]+/g, 'bundle.js?v=7.0');
 
 fs.writeFileSync(path.join(baseDir, 'index.html'), html, 'utf8');
 console.log('index.html updated successfully! File size:', html.length, 'bytes');

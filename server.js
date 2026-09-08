@@ -289,14 +289,19 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      if (pathname === '/api/ai/schedule' && req.method === 'POST') {
+      if ((pathname === '/api/ai/schedule' || pathname === '/api/ai/chat') && req.method === 'POST') {
         const body = await parseBody(req);
-        if (!body.rawText || typeof body.rawText !== 'string' || !body.rawText.trim()) {
-          return sendJSON(res, 400, { success: false, error: 'Teks tugasan diperlukan untuk penjadualan AI' });
+        const hasInput = (body.rawText && typeof body.rawText === 'string' && body.rawText.trim()) ||
+                         (body.followupPrompt && typeof body.followupPrompt === 'string' && body.followupPrompt.trim());
+        if (!hasInput) {
+          return sendJSON(res, 400, { success: false, error: 'Teks tugasan atau soalan susulan diperlukan untuk AI' });
         }
         const userApiKey = (body.apiKey && typeof body.apiKey === 'string' && body.apiKey.trim()) || process.env.GEMINI_API_KEY || null;
         const scheduleResult = await aiEngine.generateSmartSchedule({
-          rawText: body.rawText,
+          rawText: body.rawText || '',
+          followupPrompt: body.followupPrompt || null,
+          history: Array.isArray(body.history) ? body.history : [],
+          currentTasks: Array.isArray(body.currentTasks) ? body.currentTasks : [],
           startTime: body.startTime || '09:00',
           endTime: body.endTime || '18:00',
           pacing: body.pacing || 'balanced',

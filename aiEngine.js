@@ -491,18 +491,72 @@ function scheduleTasks(tasks, options = {}) {
 
 /**
  * Panggilan Google Gemini API (jika API Key disediakan)
+ * Menyokong input mentah awal serta perbualan multi-turn lanjutan (follow-up)
  */
-async function callGeminiAI(rawText, options = {}, apiKey) {
+async function callGeminiAI(input, options = {}, apiKey) {
   if (!apiKey) return null;
 
   const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
   
-  for (const model of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      
-      const prompt = `Anda adalah Pakar Pengurusan Masa & Jurulatih Produktiviti Pintar DailyPulse.
-Tugas anda adalah menganalisis nota, perenggan santai, atau senarai tugasan mentah pengguna dan menukarkannya kepada jadual harian yang realistik, berurutan, dan mencadangkan pengurangan masa sekiranya durasi boleh dioptimumkan:
+  const isFollowup = typeof input === 'object' && input !== null && Boolean(input.followupPrompt);
+  let prompt = '';
+
+  if (isFollowup) {
+    const followupPrompt = input.followupPrompt;
+    const history = Array.isArray(input.history) ? input.history : [];
+    const currentTasks = Array.isArray(input.currentTasks) ? input.currentTasks : [];
+
+    prompt = `Anda adalah Pakar Pengurusan Masa & Jurulatih Produktiviti Pintar DailyPulse (seperti platform AI Gemini Google).
+Pengguna sedang berinteraksi secara perbualan multi-turn dengan anda untuk memperhalusi jadual harian mereka.
+
+JADUAL & TUGASAN SEMASA PENGGUNA:
+${JSON.stringify(currentTasks.map(t => ({
+  title: t.title,
+  category: t.category,
+  durationMinutes: t.durationMinutes,
+  startTime: t.startTime,
+  endTime: t.endTime
+})), null, 2)}
+
+SEJARAH PERBUALAN TERDAHULU:
+${history.map(m => `${m.role === 'user' ? 'PENGGUNA' : 'GEMINI AI'}: ${m.content}`).join('\n') || '(Sesi baru bermula)'}
+
+MESEJ / ARAHAN SUSULAN BAHARU DARIPADA PENGGUNA:
+"""
+${followupPrompt}
+"""
+
+KONFIGURASI:
+- Waktu Mula: ${options.startTime || '09:00'}
+- Waktu Tamat Sasaran: ${options.endTime || '18:00'}
+- Gaya Pacing: ${options.pacing || 'balanced'}
+
+ARAHAN KRITIKAL & WAJIB:
+1. JAWAPAN PERBUALAN (conversationalReply): Jawab soalan pengguna dengan mesra, terperinci, dan menyemangatkan dalam Bahasa Melayu. Jika pengguna minta cadangan (contoh: cadang jenis senaman petang, cadang teknik fokus, susunan solat/rehat), berikan jawapan cadangan yang terbuka, kreatif, dan praktikal.
+2. JAMINAN 100% TUGASAN DILIPUTI (tasks): Kemas kini senarai tugasan agar mencerminkan arahan pengguna. PASTIKAN SETIAP TUGASAN yang dibincangkan (termasuk senaman, kerja, solat, makan, rehat) WAJIB wujud sebagai objek tugasan dengan durasi dan waktu yang tepat! JANGAN TINGGALKAN mana-mana aktiviti.
+3. KEKALKAN KONTEKS: Jangan padam tugasan sedia ada kecuali jika pengguna secara jelas meminta untuk membuang atau menggantikannya.
+4. CADANGAN PENJIMATAN MASA: Sertakan cadangan pengurangan masa (suggestion) dan nilai penjimatan (suggestedReductionMinutes) jika ada.
+
+Sila pulangkan HANYA JSON mengikut skema berikut:
+{
+  "conversationalReply": "Jawapan perbualan mesra, cadangan terbuka (cth: jenis senaman), dan huraian ringkas perubahan jadual dalam Bahasa Melayu",
+  "tasks": [
+    {
+      "title": "Tajuk Tugasan Kemas",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "durationMinutes": 45,
+      "fixedTime": null,
+      "suggestion": "Tip penjimatan masa jika ada",
+      "suggestedReductionMinutes": 0
+    }
+  ],
+  "productivityTip": "Nasihat produktiviti ringkas dalam Bahasa Melayu"
+}`;
+  } else {
+    const rawText = typeof input === 'string' ? input : (input.rawText || '');
+    prompt = `Anda adalah Pakar Pengurusan Masa & Jurulatih Produktiviti Pintar DailyPulse (seperti platform AI Gemini Google).
+Tugas anda adalah menganalisis nota, perenggan santai, atau senarai tugasan mentah pengguna dan menukarkannya kepada jadual harian yang realistik, berurutan, dan memberi cadangan penjimatan masa:
 
 TEKS MENTAH PENGGUNA:
 """
@@ -512,21 +566,21 @@ ${rawText}
 KONFIGURASI:
 - Waktu Mula: ${options.startTime || '09:00'}
 - Waktu Tamat Sasaran: ${options.endTime || '18:00'}
-- Gaya Kerja (Pacing): ${options.pacing || 'balanced'} (deep_work, balanced, atau pomodoro)
+- Gaya Kerja (Pacing): ${options.pacing || 'balanced'}
 - Masa Rehat Antara Tugasan: ${options.bufferMinutes || 10} minit
 
-ARAHAN PINTAR:
-1. Fahami ayat perbualan santai bahasa Melayu atau bahasa pasar (contoh: "esok nak gym lepastu meeting pastu lunch then siapkan slide").
-2. Ekstrak setiap tugasan/aktiviti individu mengikut turutan yang logik.
-3. Jika ada waktu khusus disebut (cth: "meeting pukul 2 petang", "lunch 12:30", "kul 10 pagi", "10 sampai 12"), set fixedTime (format 24-jam "HH:MM", cth: "14:00"). Jika tiada, set fixedTime: null.
-4. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
-5. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
-6. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
-7. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
-8. Berikan nasihat produktiviti ringkas, mesra dan menyemangatkan (productivityTip) dalam Bahasa Melayu.
+ARAHAN KRITIKAL & WAJIB:
+1. JAMINAN 100% TUGASAN DILIPUTI: Setiap satu aktiviti atau tugasan yang disebut oleh pengguna (termasuk senaman, solat, makan, mesyuarat, kerja, rehat) WAJIB dijana sebagai satu objek dalam senarai 'tasks'. JANGAN TINGGALKAN walau satu pun aktiviti tanpa tugasan dan masa!
+2. Jika ada waktu khusus disebut (cth: "meeting pukul 2 petang", "solat asar 4:50", "kul 10 pagi", "10 sampai 12"), set fixedTime (format 24-jam "HH:MM", cth: "14:00"). Jika tiada, set fixedTime: null.
+3. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
+4. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
+5. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
+6. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
+7. JAWAPAN PERBUALAN (conversationalReply): Berikan ulasan perbualan mesra gaya Gemini yang menyapa pengguna, menerangkan susunan jadual, dan memberi kata-kata perangsang.
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
+  "conversationalReply": "Ulasan mesra & penerangan pelan jadual dalam Bahasa Melayu",
   "tasks": [
     {
       "title": "Tajuk Tugasan Kemas",
@@ -540,6 +594,11 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
   ],
   "productivityTip": "Nasihat produktiviti peribadi ringkas dalam Bahasa Melayu"
 }`;
+  }
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -547,8 +606,8 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 2048,
+            temperature: 0.3,
+            maxOutputTokens: 4096,
             responseMimeType: "application/json"
           }
         })
@@ -573,6 +632,8 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       if (firstBrace !== -1 && lastBrace > firstBrace) {
         candidateText = candidateText.substring(firstBrace, lastBrace + 1);
       }
+      // Bersihkan trailing commas jika ada
+      candidateText = candidateText.replace(/,\s*([\]}])/g, '$1');
 
       const parsedJson = JSON.parse(candidateText);
       if (Array.isArray(parsedJson.tasks) && parsedJson.tasks.length > 0) {
@@ -587,20 +648,34 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
 }
 
 /**
- * Titik Masuk Utama: Jana Jadual Pintar AI
+ * Titik Masuk Utama: Jana & Perhalusi Jadual Pintar AI (Menyokong Perbualan Multi-Turn)
  */
-async function generateSmartSchedule({ rawText, startTime = '09:00', endTime = '18:00', pacing = 'balanced', bufferMinutes = 10, includeBreaks = true, applySuggestions = false, apiKey = null }) {
-  // Cuba gunakan Gemini API terlebih dahulu jika API key wujud
+async function generateSmartSchedule({
+  rawText = '',
+  followupPrompt = null,
+  history = [],
+  currentTasks = [],
+  startTime = '09:00',
+  endTime = '18:00',
+  pacing = 'balanced',
+  bufferMinutes = 10,
+  includeBreaks = true,
+  applySuggestions = false,
+  apiKey = null
+}) {
   const geminiKey = apiKey || process.env.GEMINI_API_KEY;
   let parsedTasks = [];
   let isGeminiUsed = false;
   let geminiTip = null;
+  let conversationalReply = null;
 
   if (geminiKey) {
-    const geminiResult = await callGeminiAI(rawText, { startTime, endTime, pacing, bufferMinutes }, geminiKey);
+    const inputPayload = followupPrompt ? { followupPrompt, history, currentTasks } : rawText;
+    const geminiResult = await callGeminiAI(inputPayload, { startTime, endTime, pacing, bufferMinutes }, geminiKey);
     if (geminiResult && Array.isArray(geminiResult.tasks) && geminiResult.tasks.length > 0) {
       isGeminiUsed = true;
       geminiTip = geminiResult.productivityTip || null;
+      conversationalReply = geminiResult.conversationalReply || geminiTip;
       parsedTasks = geminiResult.tasks.map((t, idx) => ({
         id: `ai-task-${Date.now()}-${idx + 1}`,
         rawTitle: t.title,
@@ -619,7 +694,15 @@ async function generateSmartSchedule({ rawText, startTime = '09:00', endTime = '
 
   // Jika Gemini tidak digunakan atau tiada hasil, guna Enjin Heuristik Tempatan (100% Pantas & Mandiri)
   if (parsedTasks.length === 0) {
-    parsedTasks = parseRawText(rawText);
+    if (followupPrompt && currentTasks.length > 0) {
+      // Heuristic follow-up: tambah tugasan baru jika diminta
+      const newItems = parseRawText(followupPrompt);
+      parsedTasks = [...currentTasks, ...newItems];
+      conversationalReply = `Saya telah menambahkan ${newItems.length} aktiviti baharu ke dalam jadual anda.`;
+    } else {
+      parsedTasks = parseRawText(rawText);
+      conversationalReply = `Jadual anda telah dianalisis dan disusun mengikut waktu berturutan.`;
+    }
   }
 
   // Laksanakan penjadualan masa berperingkat & cadangan pengurangan masa
@@ -632,6 +715,8 @@ async function generateSmartSchedule({ rawText, startTime = '09:00', endTime = '
     applySuggestions
   });
 
+  scheduledResult.conversationalReply = conversationalReply || 'Jadual anda telah dioptimumkan secara seimbang tanpa pertindihan waktu.';
+  scheduledResult.summary.conversationalReply = scheduledResult.conversationalReply;
   scheduledResult.summary.aiEngine = isGeminiUsed ? 'Google Gemini AI (Neural Model)' : 'Heuristik Pintar Tempatan (Offline Mode)';
   scheduledResult.summary.isGemini = isGeminiUsed;
   if (isGeminiUsed && geminiTip) {

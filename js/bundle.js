@@ -3646,7 +3646,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClearAiKey = document.getElementById('btn-clear-ai-key');
   let hasServerGeminiKey = false;
 
+  // Sembang Interaktif Gemini AI (Multi-Turn Chat)
+  const aiChatThread = document.getElementById('ai-chat-thread');
+  const aiInputFollowup = document.getElementById('ai-input-followup');
+  const btnAiSendFollowup = document.getElementById('btn-ai-send-followup');
+  const aiFollowupTyping = document.getElementById('ai-followup-typing');
+
   let currentAiScheduleResult = null;
+  let aiConversationHistory = [];
 
   const AI_TEMPLATES = {
     work: "- Review PR dan semak isu bug\n- Siapkan pembentangan projek Alpha (1 jam)\n- Mesyuarat koordinasi klien pukul 2 petang\n- Balas emel dan semak invois (45m)\n- Refleksi kerja & perancangan esok",
@@ -3728,6 +3735,96 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiResultsSection) aiResultsSection.style.display = (section === 'results') ? 'block' : 'none';
   }
 
+  function appendChatMessage(role, text) {
+    if (!aiChatThread || !text) return;
+
+    aiConversationHistory.push({ role, content: text });
+
+    const wrap = document.createElement('div');
+    wrap.className = `chat-bubble-wrap ${role === 'user' ? 'user' : 'ai'}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `chat-avatar ${role === 'user' ? 'user-avatar' : 'ai-avatar'}`;
+    avatar.innerHTML = role === 'user' ? '👤' : '✨';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+
+    const header = document.createElement('div');
+    header.className = 'chat-bubble-header';
+    header.textContent = role === 'user' ? 'Anda' : 'Gemini AI Coach';
+
+    const textElem = document.createElement('div');
+    textElem.className = 'chat-bubble-text';
+    textElem.textContent = text;
+
+    bubble.appendChild(header);
+    bubble.appendChild(textElem);
+
+    if (role === 'user') {
+      wrap.appendChild(bubble);
+      wrap.appendChild(avatar);
+    } else {
+      wrap.appendChild(avatar);
+      wrap.appendChild(bubble);
+    }
+
+    aiChatThread.appendChild(wrap);
+    aiChatThread.scrollTop = aiChatThread.scrollHeight;
+  }
+
+  async function handleFollowupMessage(userPrompt) {
+    const text = (userPrompt || (aiInputFollowup ? aiInputFollowup.value : '')).trim();
+    if (!text) return;
+
+    if (aiInputFollowup) aiInputFollowup.value = '';
+
+    appendChatMessage('user', text);
+    triggerHaptic([20]);
+
+    if (aiFollowupTyping) aiFollowupTyping.style.display = 'inline-flex';
+    if (btnAiSendFollowup) btnAiSendFollowup.disabled = true;
+
+    try {
+      const userApiKey = localStorage.getItem('gemini_api_key') || undefined;
+      const startTime = aiStartTimeInput ? aiStartTimeInput.value : '09:00';
+      const pacing = aiPacingSelect ? aiPacingSelect.value : 'balanced';
+
+      const resp = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          followupPrompt: text,
+          history: aiConversationHistory,
+          currentTasks: currentAiScheduleResult ? currentAiScheduleResult.scheduledTasks : [],
+          startTime,
+          pacing,
+          apiKey: userApiKey
+        })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        throw new Error(data.error || 'Gagal memproses respons AI');
+      }
+
+      currentAiScheduleResult = data;
+      const reply = data.conversationalReply || data.summary?.productivityTip || 'Jadual anda telah dikemas kini mengikut perbincangan.';
+      appendChatMessage('model', reply);
+      renderAiPreview(data);
+      playAudioChime('chime');
+      triggerHaptic([30, 40]);
+    } catch (err) {
+      console.error('Ralat follow-up AI:', err);
+      appendChatMessage('model', `⚠️ Maaf, ralat berlaku semasa memproses permintaan: ${err.message}. Sila cuba semula.`);
+      showToast('Ralat: ' + err.message, 'warning');
+    } finally {
+      if (aiFollowupTyping) aiFollowupTyping.style.display = 'none';
+      if (btnAiSendFollowup) btnAiSendFollowup.disabled = false;
+      if (aiInputFollowup) aiInputFollowup.focus();
+    }
+  }
+
   async function handleAiGenerate(applySuggestions = false) {
     const rawText = aiRawTextInput ? aiRawTextInput.value.trim() : '';
 
@@ -3765,6 +3862,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       currentAiScheduleResult = data;
+
+      // Inisialisasi sembang interaktif Gemini
+      aiConversationHistory = [];
+      if (aiChatThread) aiChatThread.innerHTML = '';
+      appendChatMessage('user', rawText);
+      const reply = data.conversationalReply || data.summary?.productivityTip || 'Jadual anda telah disusun tanpa sebarang pertindihan waktu.';
+      appendChatMessage('model', reply);
+
       renderAiPreview(data);
       showAiSection('results');
       playAudioChime('chime');
@@ -4081,6 +4186,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aiKeyConfigPanel) aiKeyConfigPanel.style.display = 'none';
       });
     }
+
+    // Event Sembang Susulan (Follow-up Chat)
+    if (btnAiSendFollowup) {
+      btnAiSendFollowup.addEventListener('click', () => handleFollowupMessage());
+    }
+
+    if (aiInputFollowup) {
+      aiInputFollowup.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleFollowupMessage();
+        }
+      });
+    }
+
+    document.querySelectorAll('.ai-quick-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const prompt = chip.dataset.prompt;
+        if (prompt) {
+          if (aiInputFollowup) aiInputFollowup.value = prompt;
+          handleFollowupMessage(prompt);
+        }
+      });
+    });
   }
 
   // ================= INISIALISASI =================
