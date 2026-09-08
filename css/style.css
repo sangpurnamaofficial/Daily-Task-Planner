@@ -2201,6 +2201,11 @@ body::before {
     display: none;
   }
 
+  /* Desktop Header: Hide mobile hamburger on desktop screens */
+  .hamburger-btn {
+    display: none !important;
+  }
+
   /* Desktop Action Bar */
   .desktop-actions {
     display: flex !important;
@@ -2208,7 +2213,7 @@ body::before {
     gap: 10px;
   }
 
-  /* Dashboard 2-Column Grid on Desktop */
+  /* Dashboard 2-Column Grid on Desktop (Rebalanced) */
   .dashboard-grid {
     display: grid !important;
     grid-template-columns: 1.12fr 0.88fr;
@@ -2231,6 +2236,342 @@ body::before {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
+}
+
+/* ==========================================================================
+   DESKTOP EXECUTIVE SUITE & KPI METRIC ROW
+   ========================================================================== */
+
+/* KPI Metric Bar (4 Cards) */
+.desktop-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 899px) {
+  .desktop-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+}
+
+.kpi-metric-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: all 0.25s ease;
+}
+
+.kpi-metric-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 25px -8px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+.kpi-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-icon-indigo {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.kpi-icon-purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.kpi-icon-emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.kpi-icon-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.kpi-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.kpi-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Category Pills inside Daily Budget Card */
+.capacity-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-glass);
+  color: #cbd5e1;
+}
+
+.cat-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.cat-pill-work .cat-pill-dot { background: #818cf8; box-shadow: 0 0 6px #818cf8; }
+.cat-pill-study .cat-pill-dot { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
+.cat-pill-health .cat-pill-dot { background: #34d399; box-shadow: 0 0 6px #34d399; }
+.cat-pill-personal .cat-pill-dot { background: #f472b6; box-shadow: 0 0 6px #f472b6; }
+
+/* AI Copilot Widget in Right Column */
+.ai-copilot-widget {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 30px -8px rgba(99, 102, 241, 0.25);
+  transition: all 0.25s ease;
+}
+
+.ai-copilot-widget:hover {
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 12px 35px -8px rgba(168, 85, 247, 0.35);
+}
+
+.copilot-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.copilot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #e9d5ff;
+}
+
+.copilot-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+
+.copilot-text {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.copilot-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-copilot-cta {
+  padding: 8px 16px;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.btn-copilot-secondary {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copilot-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* Quick Tools Card in Right Column */
+.quick-tools-card {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  margin-top: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tools-header {
+  margin-bottom: 10px;
+}
+
+.tools-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tool-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-glass);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.tool-chip:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Empty Goal State Card on Desktop */
+.empty-goals-desktop-card {
+  text-align: center;
+  padding: 24px 16px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+}
+
+.empty-goals-icon {
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+.empty-goals-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.empty-goals-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  max-width: 320px;
+  margin: 0 auto 12px;
+  line-height: 1.45;
+}
+
+.btn-add-first-goal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(99, 102, 241, 0.25));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-first-goal:hover {
+  background: #10b981;
+  color: #064e3b;
+  transform: scale(1.03);
 }
 
 /* ==========================================================================

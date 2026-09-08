@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const langOptEn = document.getElementById('lang-opt-en');
   const settingLanguage = document.getElementById('setting-language');
 
-  // Dashboard DOM
+  // Dashboard DOM & Desktop KPI DOM
   const budgetPlannedVal = document.getElementById('budget-planned-val');
   const budgetCapacitySub = document.getElementById('budget-capacity-sub');
   const budgetProgressFill = document.getElementById('budget-progress-fill');
@@ -38,6 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const overlapAlertContainer = document.getElementById('overlap-alert-container');
   const nextTaskContainer = document.getElementById('next-task-container');
   const dashboardGoalsList = document.getElementById('dashboard-goals-list');
+  const valKpiTasks = document.getElementById('val-kpi-tasks');
+  const subKpiTasks = document.getElementById('sub-kpi-tasks');
+  const valKpiFocus = document.getElementById('val-kpi-focus');
+  const subKpiFocus = document.getElementById('sub-kpi-focus');
+  const valKpiGoals = document.getElementById('val-kpi-goals');
+  const subKpiGoals = document.getElementById('sub-kpi-goals');
+  const valKpiAi = document.getElementById('val-kpi-ai');
+  const subKpiAi = document.getElementById('sub-kpi-ai');
+  const capacityCategoryPills = document.getElementById('capacity-category-pills');
+  const dashboardAiCopilotText = document.getElementById('dashboard-ai-copilot-text');
 
   // Tasks DOM
   const tasksListContainer = document.getElementById('tasks-list-container');
@@ -431,7 +441,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (txtDrawerImport) txtDrawerImport.textContent = isEn ? 'Import' : 'Import';
     if (txtDrawerReset) txtDrawerReset.textContent = isEn ? 'Restore Demo' : 'Pulih Demo';
 
-    // Dashboard
+    // Dashboard & Desktop KPI
+    const lblKpiTasks = document.getElementById('lbl-kpi-tasks');
+    const lblKpiFocus = document.getElementById('lbl-kpi-focus');
+    const lblKpiGoals = document.getElementById('lbl-kpi-goals');
+    const lblKpiAi = document.getElementById('lbl-kpi-ai');
+    if (lblKpiTasks) lblKpiTasks.textContent = isEn ? "Today's Tasks" : 'Tugasan Hari Ini';
+    if (lblKpiFocus) lblKpiFocus.textContent = isEn ? 'Planned Focus Time' : 'Waktu Fokus Dirancang';
+    if (lblKpiGoals) lblKpiGoals.textContent = isEn ? 'Daily Goals' : 'Matlamat Harian';
+    if (lblKpiAi) lblKpiAi.textContent = isEn ? 'Schedule Status' : 'Status Penjadualan';
+
+    const chipPomodoro = document.querySelector('#btn-tool-pomodoro span:last-child');
+    const chipAddTask = document.querySelector('#btn-tool-add-task span:last-child');
+    const chipTimeline = document.querySelector('#btn-tool-timeline span:last-child');
+    if (chipPomodoro) chipPomodoro.textContent = isEn ? '25m Focus' : 'Fokus 25m';
+    if (chipAddTask) chipAddTask.textContent = isEn ? 'Task' : 'Tugasan';
+    if (chipTimeline) chipTimeline.textContent = isEn ? 'Timeline' : 'Garis Masa';
+
     const bTitle = document.querySelector('#daily-budget-card .budget-title');
     if (bTitle) bTitle.textContent = t('dailyCapacityTitle');
     const statBoxes = document.querySelectorAll('.stat-box');
@@ -578,8 +604,129 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 1. Dashboard Render
+  function renderDashboardKPIs(tasks, goals, budget, overlaps) {
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+    const t = (k) => window.I18N ? window.I18N.t(k) : k;
+
+    // 1. Tugasan Hari Ini
+    if (valKpiTasks && subKpiTasks) {
+      const total = tasks.length;
+      const done = tasks.filter(item => item.completed).length;
+      valKpiTasks.textContent = `${done} / ${total}`;
+      if (total === 0) {
+        subKpiTasks.textContent = isEn ? '0% completed' : '0% selesai';
+      } else {
+        const pct = Math.round((done / total) * 100);
+        const remaining = total - done;
+        subKpiTasks.textContent = isEn
+          ? `${pct}% completed (${remaining} left)`
+          : `${pct}% selesai (${remaining} berbaki)`;
+      }
+    }
+
+    // 2. Waktu Fokus Dirancang
+    if (valKpiFocus && subKpiFocus) {
+      valKpiFocus.textContent = budget.taskFormatted || '0j 0m';
+      subKpiFocus.textContent = isEn
+        ? `${budget.usagePercentage}% daily capacity`
+        : `${budget.usagePercentage}% kapasiti hari`;
+    }
+
+    // 3. Matlamat Harian
+    if (valKpiGoals && subKpiGoals) {
+      const totalGoals = goals.length;
+      valKpiGoals.textContent = isEn ? `${totalGoals} Active` : `${totalGoals} Aktif`;
+      if (totalGoals === 0) {
+        subKpiGoals.textContent = isEn ? 'No goals created' : 'Belum ada matlamat';
+      } else {
+        const doneToday = goals.filter(g => g.completedToday || (g.actualMinutesSpent >= g.allocatedMinutes)).length;
+        const maxStreak = Math.max(0, ...goals.map(g => g.streakDays || 0));
+        subKpiGoals.textContent = isEn
+          ? `${doneToday} achieved • 🔥 ${maxStreak}d streak`
+          : `${doneToday} dicapai • 🔥 ${maxStreak}h streak`;
+      }
+    }
+
+    // 4. Status Penjadualan AI
+    if (valKpiAi && subKpiAi) {
+      if (overlaps.length === 0) {
+        valKpiAi.textContent = isEn ? 'Harmonized ✨' : 'Harmoni ✨';
+        valKpiAi.style.color = '#34d399';
+        subKpiAi.textContent = isEn ? '0 conflicts detected' : '0 pertindihan dikesan';
+      } else {
+        valKpiAi.textContent = isEn ? `⚠️ ${overlaps.length} Conflicts` : `⚠️ ${overlaps.length} Pertindihan`;
+        valKpiAi.style.color = '#fbbf24';
+        subKpiAi.textContent = isEn ? 'Click Auto-Fix to balance' : 'Klik Auto-Susun untuk baiki';
+      }
+    }
+  }
+
+  function renderCapacityCategoryPills(tasks) {
+    if (!capacityCategoryPills) return;
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
+
+    if (tasks.length === 0) {
+      capacityCategoryPills.innerHTML = `<span style="font-size: 0.74rem; color: var(--text-dim); font-style: italic;">
+        ${isEn ? '💡 Add tasks to see today\'s category time breakdown.' : '💡 Tambah tugasan untuk melihat pecahan kategori masa hari ini.'}
+      </span>`;
+      return;
+    }
+
+    const catTotals = {
+      Kerja: 0,
+      Belajar: 0,
+      Kesihatan: 0,
+      Peribadi: 0
+    };
+
+    tasks.forEach(task => {
+      let cat = task.category || 'Kerja';
+      if (cat === 'Work') cat = 'Kerja';
+      if (cat === 'Study') cat = 'Belajar';
+      if (cat === 'Health') cat = 'Kesihatan';
+      if (cat === 'Personal') cat = 'Peribadi';
+
+      const dur = Number(task.durationMinutes) || 0;
+      if (catTotals[cat] !== undefined) {
+        catTotals[cat] += dur;
+      } else {
+        catTotals[cat] = (catTotals[cat] || 0) + dur;
+      }
+    });
+
+    const catClasses = {
+      Kerja: 'cat-pill-work',
+      Belajar: 'cat-pill-study',
+      Kesihatan: 'cat-pill-health',
+      Peribadi: 'cat-pill-personal'
+    };
+
+    const catLabels = {
+      Kerja: isEn ? 'Work' : 'Kerja',
+      Belajar: isEn ? 'Study' : 'Belajar',
+      Kesihatan: isEn ? 'Health' : 'Kesihatan',
+      Peribadi: isEn ? 'Personal' : 'Peribadi'
+    };
+
+    const activePills = Object.keys(catTotals)
+      .filter(k => catTotals[k] > 0)
+      .map(k => {
+        const cls = catClasses[k] || 'cat-pill-work';
+        const lbl = catLabels[k] || k;
+        const timeStr = window.TimeEngine ? window.TimeEngine.formatDuration(catTotals[k]) : `${catTotals[k]}m`;
+        return `<span class="cat-pill ${cls}"><span class="cat-pill-dot"></span> ${lbl}: <strong>${timeStr}</strong></span>`;
+      });
+
+    if (activePills.length === 0) {
+      capacityCategoryPills.innerHTML = `<span style="font-size: 0.74rem; color: var(--text-dim); font-style: italic;">0m</span>`;
+    } else {
+      capacityCategoryPills.innerHTML = activePills.join('');
+    }
+  }
+
   function renderDashboard() {
     const t = (k) => window.I18N ? window.I18N.t(k) : k;
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
     const budget = window.TimeEngine.calculateDailyBudget(
       settings.dayStartTime,
       settings.dayEndTime,
@@ -588,7 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     budgetPlannedVal.textContent = budget.totalPlannedFormatted;
-    budgetCapacitySub.textContent = window.I18N && window.I18N.getLanguage() === 'en'
+    budgetCapacitySub.textContent = isEn
       ? `Of ${budget.availableFormatted} ${t('awakeHours')}`
       : `Daripada ${budget.availableFormatted} ${t('awakeHours')}`;
 
@@ -625,8 +772,35 @@ document.addEventListener('DOMContentLoaded', () => {
       overlapAlertContainer.innerHTML = '';
     }
 
+    // 4 KPI Cards Bar Eksekutif Desktop
+    renderDashboardKPIs(tasks, goals, budget, overlaps);
+
+    // Kategori Waktu Kapasiti Harian
+    renderCapacityCategoryPills(tasks);
+
+    // Dynamic AI Copilot Guidance Text
+    if (dashboardAiCopilotText) {
+      if (overlaps.length > 0) {
+        dashboardAiCopilotText.textContent = isEn
+          ? `⚠️ Detected ${overlaps.length} schedule conflict(s). Click 'Auto-Susun' or open AI Smart Schedule to balance your day instantly!`
+          : `⚠️ Dikesan ${overlaps.length} pertindihan masa. Klik 'Auto-Susun' atau buka AI Jadual Pintar untuk seimbangkan hari anda!`;
+      } else if (budget.isOverbooked) {
+        dashboardAiCopilotText.textContent = isEn
+          ? `⚠️ Schedule exceeds awake hours by ${budget.remainingFormatted}. Ask AI to optimize task durations and suggest high-impact priorities!`
+          : `⚠️ Jadual melebihi waktu berjaga sebanyak ${budget.remainingFormatted}. Tanya AI untuk cadangan memendekkan masa atau fokus utama!`;
+      } else if (tasks.length === 0) {
+        dashboardAiCopilotText.textContent = isEn
+          ? `Start your day with high clarity! Send a quick list of your tasks and let AI organize prayer times, work, and breaks automatically.`
+          : `Mulakan hari anda dengan kepantasan! Hantarkan senarai aktiviti anda dan biarkan AI menyusun waktu solat, kerja, dan rehat secara automatik.`;
+      } else {
+        dashboardAiCopilotText.textContent = isEn
+          ? `Your daily schedule is conflict-free and well balanced! Keep up your focused momentum and achieve all your daily targets.`
+          : `Jadual hari ini tersusun rapi tanpa sebarang pertindihan masa! Kekalkan momentum fokus dan capai semua sasaran anda hari ini.`;
+      }
+    }
+
     // Tugasan Seterusnya (Next Up Task)
-    const pendingTasks = tasks.filter(t => !t.completed);
+    const pendingTasks = tasks.filter(item => !item.completed);
     if (pendingTasks.length > 0) {
       const nextTask = pendingTasks[0];
       const isLive = isTaskCurrentlyOngoing(nextTask);
@@ -637,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="task-details">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
                 <div class="task-title" style="margin-bottom:0;">${escapeHtml(nextTask.title)}</div>
-                ${isLive ? `<span class="badge-live-pulse"><span class="pulse-dot"></span> ${window.I18N && window.I18N.getLanguage() === 'en' ? 'LIVE NOW' : 'AKTIF SEKARANG'}</span>` : ''}
+                ${isLive ? `<span class="badge-live-pulse"><span class="pulse-dot"></span> ${isEn ? 'LIVE NOW' : 'AKTIF SEKARANG'}</span>` : ''}
               </div>
               ${nextTask.notes ? `<div class="task-notes">${escapeHtml(nextTask.notes)}</div>` : ''}
               <div class="task-meta">
@@ -666,26 +840,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Matlamat Hari Ini Ringkas (Dashboard)
-    dashboardGoalsList.innerHTML = goals.map(g => {
-      const isDone = g.completedToday || (g.actualMinutesSpent >= g.allocatedMinutes);
-      return `
-        <div class="goal-card" style="padding: 12px 14px; margin-bottom: 8px;">
-          <div class="goal-header" style="margin-bottom: 4px;">
-            <div class="goal-title" style="font-size: 0.9rem;">${escapeHtml(g.title)}</div>
-            <div class="streak-pill">🔥 ${g.streakDays || 0}d</div>
+    if (goals.length === 0) {
+      dashboardGoalsList.innerHTML = `
+        <div class="empty-goals-desktop-card">
+          <div class="empty-goals-icon">🎯</div>
+          <div class="empty-goals-title">${isEn ? 'No Daily Goals Yet' : 'Belum Ada Matlamat Harian'}</div>
+          <div class="empty-goals-desc">
+            ${isEn ? 'Build lasting daily habits by allocating focus time for reading, exercise, or learning.' : 'Bina tabiat berterusan dengan menetapkan sasaran masa harian seperti membaca, senaman, atau belajar skil baru.'}
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:6px;">
-            <span>${t('dailyAllocation')}: ${window.TimeEngine.formatDuration(g.allocatedMinutes)} / ${t('perDay')}</span>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span class="badge ${isDone ? 'badge-priority-tinggi' : 'badge-duration'}" style="${isDone ? 'background:rgba(16,185,129,0.2); color:#34d399;' : ''}">
-                ${isDone ? t('completedToday') : `${g.actualMinutesSpent || 0}/${g.allocatedMinutes}m`}
-              </span>
-              <button class="btn-goal-quick-add" data-quick-goal="${g.id}" data-mins="15" title="Tambah 15 minit">+15m</button>
-            </div>
-          </div>
+          <button type="button" class="btn-add-first-goal" id="btn-dash-add-goal">
+            <span>➕</span> ${isEn ? 'Create First Goal' : 'Cipta Matlamat Pertama'}
+          </button>
         </div>
       `;
-    }).join('');
+      document.getElementById('btn-dash-add-goal')?.addEventListener('click', () => {
+        openGoalModal();
+      });
+    } else {
+      dashboardGoalsList.innerHTML = goals.map(g => {
+        const isDone = g.completedToday || (g.actualMinutesSpent >= g.allocatedMinutes);
+        return `
+          <div class="goal-card" style="padding: 12px 14px; margin-bottom: 8px;">
+            <div class="goal-header" style="margin-bottom: 4px;">
+              <div class="goal-title" style="font-size: 0.9rem;">${escapeHtml(g.title)}</div>
+              <div class="streak-pill">🔥 ${g.streakDays || 0}d</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:6px;">
+              <span>${t('dailyAllocation')}: ${window.TimeEngine.formatDuration(g.allocatedMinutes)} / ${t('perDay')}</span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="badge ${isDone ? 'badge-priority-tinggi' : 'badge-duration'}" style="${isDone ? 'background:rgba(16,185,129,0.2); color:#34d399;' : ''}">
+                  ${isDone ? t('completedToday') : `${g.actualMinutesSpent || 0}/${g.allocatedMinutes}m`}
+                </span>
+                <button class="btn-goal-quick-add" data-quick-goal="${g.id}" data-mins="15" title="Tambah 15 minit">+15m</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   // 2. Tasks List Render
@@ -945,6 +1137,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pautan Pantas Dashboard
     document.getElementById('btn-jump-tasks')?.addEventListener('click', () => switchTab('tab-tasks'));
     document.getElementById('btn-jump-goals')?.addEventListener('click', () => switchTab('tab-goals'));
+
+    // Pintasan Produktiviti Pantas Desktop
+    document.getElementById('btn-tool-pomodoro')?.addEventListener('click', () => {
+      const pendingTasks = tasks.filter(t => !t.completed);
+      if (pendingTasks.length > 0) {
+        startFocusForTask(pendingTasks[0].id);
+      } else {
+        const dummyTask = { id: 'pomodoro-quick', title: 'Sesi Fokus Mendalam (Pomodoro)', durationMinutes: 25 };
+        timerTag.textContent = 'FOKUS 25 MINIT';
+        timerItemTitle.textContent = dummyTask.title;
+        window.Timer.setItem(dummyTask, 'task', 'countdown');
+        modalTimer.classList.add('active');
+        window.Timer.start();
+      }
+    });
+    document.getElementById('btn-tool-add-task')?.addEventListener('click', () => openTaskModal());
+    document.getElementById('btn-tool-timeline')?.addEventListener('click', () => switchTab('tab-timeline'));
+    document.getElementById('btn-quick-auto-cascade')?.addEventListener('click', handleAutoCascade);
 
     // Filter Tugasan
     filterPills.forEach((pill, idx) => {
