@@ -737,12 +737,16 @@ body::before {
   border-top-right-radius: var(--radius-lg);
   width: 100%;
   max-width: var(--app-max-width);
-  max-height: 90vh;
+  max-height: 88vh;
+  max-height: 88dvh;
   overflow-y: auto;
-  padding: 22px 20px 30px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 18px 20px 40px;
   position: relative;
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  touch-action: pan-y;
 }
 
 @keyframes slideUp {
@@ -751,12 +755,15 @@ body::before {
 }
 
 .modal-handle {
-  width: 44px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 3px;
-  margin: -8px auto 16px;
-  cursor: pointer;
+  width: 52px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin: -6px auto 16px;
+  cursor: grab;
+  touch-action: none;
+  padding: 8px 0;
+  background-clip: content-box;
 }
 
 .modal-close-icon-btn {

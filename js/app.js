@@ -293,21 +293,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function bindSwipeToDismiss() {
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       const sheet = overlay.querySelector('.modal-sheet');
-      if (!sheet) return;
+      const handle = overlay.querySelector('.modal-handle');
+      if (!sheet || !handle) return;
 
       let startY = 0;
       let currentY = 0;
       let isDragging = false;
 
-      sheet.addEventListener('touchstart', (e) => {
-        if (sheet.scrollTop > 5 && !e.target.closest('.modal-handle')) return;
+      // HANYA aktifkan heretan leret untuk tutup bila pengguna menarik pemegang bar (.modal-handle)
+      handle.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
         currentY = startY;
         isDragging = true;
         sheet.classList.add('dragging');
       }, { passive: true });
 
-      sheet.addEventListener('touchmove', (e) => {
+      handle.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
         currentY = e.touches[0].clientY;
         const diff = currentY - startY;
@@ -316,13 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }, { passive: true });
 
-      sheet.addEventListener('touchend', () => {
+      handle.addEventListener('touchend', () => {
         if (!isDragging) return;
         isDragging = false;
         sheet.classList.remove('dragging');
         const diff = currentY - startY;
         sheet.style.transform = '';
-        if (diff > 90) {
+        if (diff > 80) {
           overlay.classList.remove('active');
           triggerHaptic([30]);
         }
@@ -1418,7 +1419,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateLiveTaskDuration();
     modalTask.classList.add('active');
-    taskTitleInput.focus();
+    if (window.innerWidth >= 768) {
+      taskTitleInput.focus();
+    }
   }
 
   // Buka Modal Matlamat
@@ -1428,7 +1431,9 @@ document.addEventListener('DOMContentLoaded', () => {
     goalDaysInput.value = '5';
     updateLiveGoalCalculation();
     modalGoal.classList.add('active');
-    goalTitleInput.focus();
+    if (window.innerWidth >= 768) {
+      goalTitleInput.focus();
+    }
   }
 
   // Simpan Tugasan Baru / Sunting
@@ -1795,8 +1800,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (eyeIconHide) eyeIconHide.style.display = 'none';
     if (modalAuth) modalAuth.classList.add('active');
     setTimeout(() => {
-      if (mode === 'signup' && authInputName) authInputName.focus();
-      else if (authInputEmail) authInputEmail.focus();
+      if (window.innerWidth >= 768) {
+        if (mode === 'signup' && authInputName) authInputName.focus();
+        else if (authInputEmail) authInputEmail.focus();
+      }
     }, 150);
   }
 
