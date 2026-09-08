@@ -302,6 +302,74 @@ runTest('generateSmartSchedule mengembalikan respons tindakan CLEAR_ALL_TASKS ta
   assert.ok(result.conversationalReply, 'Patut mempunyai balasan mesra AI');
 });
 
+// 17. Ujian Kronologi: Tidur dahulu, kemudian bangun baca Quran, kemudian Solat Subuh
+runTest('Kronologi logik: Tidur dahulu, kemudian bangun awal pagi, kemudian Solat Subuh', () => {
+  const tasks = [
+    { title: 'Tidur Berkualiti (6 Jam)', durationMinutes: 360, fixedTime: '22:00' },
+    { title: 'Baca Al-Quran', durationMinutes: 20 },
+    { title: 'Solat Subuh', durationMinutes: 15, fixedTime: '05:55' },
+    { title: 'Tukar berus gigi', durationMinutes: 15 },
+    { title: 'Check cleanser dan skincare', durationMinutes: 15 },
+    { title: 'Siapkan sistem trading dan affiliate', durationMinutes: 120 }
+  ];
+
+  const result = aiEngine.scheduleTasks(tasks, { startTime: '09:00', bufferMinutes: 10 });
+  const scheduled = result.scheduledTasks;
+
+  // 1. Tidur mesti tugas #1 pada 22:00 -> 04:00
+  assert.strictEqual(scheduled[0].title, 'Tidur Berkualiti (6 Jam)');
+  assert.strictEqual(scheduled[0].startTime, '22:00');
+  assert.strictEqual(scheduled[0].endTime, '04:00');
+
+  // 2. Baca Quran mesti selepas bangun tidur pada 04:10 -> 04:30
+  assert.strictEqual(scheduled[1].title, 'Baca Al-Quran');
+  assert.strictEqual(scheduled[1].startTime, '04:10');
+  assert.strictEqual(scheduled[1].endTime, '04:30');
+
+  // 3. Solat Subuh mesti pada 05:55 -> 06:10 (SELEPAS bangun & baca Quran, BUKAN sebelum tidur!)
+  assert.strictEqual(scheduled[2].title, 'Solat Subuh');
+  assert.strictEqual(scheduled[2].startTime, '05:55');
+  assert.strictEqual(scheduled[2].endTime, '06:10');
+
+  // 4. Tukar berus gigi pada 06:20 -> 06:35 (selepas 10m rehat solat)
+  assert.strictEqual(scheduled[3].title, 'Tukar berus gigi');
+  assert.strictEqual(scheduled[3].startTime, '06:20');
+  assert.strictEqual(scheduled[3].endTime, '06:35');
+
+  // 5. Check cleanser pada 06:45 -> 07:00 (selepas 10m buffer)
+  assert.strictEqual(scheduled[4].title, 'Check cleanser dan skincare');
+  assert.strictEqual(scheduled[4].startTime, '06:45');
+  assert.strictEqual(scheduled[4].endTime, '07:00');
+
+  // 6. Siapkan sistem trading pada 07:10 -> 09:10 (selepas 10m buffer)
+  assert.strictEqual(scheduled[5].title, 'Siapkan sistem trading dan affiliate');
+  assert.strictEqual(scheduled[5].startTime, '07:10');
+  assert.strictEqual(scheduled[5].endTime, '09:10');
+});
+
+// 18. Ujian Ekstrak Waktu Melayu Berformat Titik (4.10 am, 10.30 malam, 5.55 pagi)
+runTest('Ekstrak waktu format titik Melayu tanpa pecah angka', () => {
+  assert.strictEqual(aiEngine.extractFixedTime('baca quran 4.10 am'), '04:10');
+  assert.strictEqual(aiEngine.extractFixedTime('tidur 10.30 malam'), '22:30');
+  assert.strictEqual(aiEngine.extractFixedTime('solat subuh 5.55 pagi'), '05:55');
+  assert.strictEqual(aiEngine.extractFixedTime('rehat 2.15 petang'), '14:15');
+});
+
+// 19. Ujian Julat Masa Melepasi Tengah Malam
+runTest('Ekstrak julat masa merentasi tengah malam (10pm sampai 4am)', () => {
+  const range1 = aiEngine.extractTimeRange('tidur 10pm sampai 4am');
+  assert.ok(range1);
+  assert.strictEqual(range1.startTime, '22:00');
+  assert.strictEqual(range1.endTime, '04:00');
+  assert.strictEqual(range1.durationMinutes, 360);
+
+  const range2 = aiEngine.extractTimeRange('tidur 10 malam sampai 4 pagi');
+  assert.ok(range2);
+  assert.strictEqual(range2.startTime, '22:00');
+  assert.strictEqual(range2.endTime, '04:00');
+  assert.strictEqual(range2.durationMinutes, 360);
+});
+
 console.log(`\n======================================================`);
-console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 16 LULUS 100%!`);
+console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 19 LULUS 100%!`);
 console.log(`======================================================\n`);

@@ -71,34 +71,48 @@ function extractExplicitDuration(text) {
 }
 
 /**
- * Ekstrak julat masa dari teks (cth: "pukul 9 sampai 11", "9 to 11am", "10:00 - 12:00")
+ * Ekstrak julat masa dari teks (cth: "pukul 9 sampai 11", "9 to 11am", "10:00 - 12:00", "10pm sampai 4am", "10 malam sampai 4 pagi")
  */
 function extractTimeRange(text) {
   const lower = text.toLowerCase();
-  const rangeMatch = lower.match(/(?:pukul|jam|dari|from)?\s*(\d{1,2})(?::(\d{2}))?\s*(?:pagi|petang|am|pm)?\s*(?:sampai|hingga|to|-)\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|petang|malam|am|pm)?/);
+  const rangeMatch = lower.match(/(?:pukul|jam|dari|from)?\s*(\d{1,2})(?:[:.](\d{2}))?\s*(pagi|petang|malam|am|pm)?\s*(?:sampai|hingga|to|-)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(pagi|petang|malam|am|pm)?/i);
   if (rangeMatch) {
     let startH = parseInt(rangeMatch[1], 10);
     let startM = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : 0;
-    let endH = parseInt(rangeMatch[3], 10);
-    let endM = rangeMatch[4] ? parseInt(rangeMatch[4], 10) : 0;
-    const period = (rangeMatch[5] || '').toLowerCase();
+    let startPeriod = (rangeMatch[3] || '').toLowerCase();
+    let endH = parseInt(rangeMatch[4], 10);
+    let endM = rangeMatch[5] ? parseInt(rangeMatch[5], 10) : 0;
+    let endPeriod = (rangeMatch[6] || '').toLowerCase();
 
-    if (period === 'petang' || period === 'malam' || period === 'pm') {
+    // Jika startPeriod tiada, buat kesimpulan daripada endPeriod
+    if (!startPeriod && endPeriod) {
+      if (startH > endH && (endPeriod === 'pagi' || endPeriod === 'am')) {
+        startPeriod = 'malam'; // cth: 10 sampai 4am -> 10pm / 10 malam
+      } else {
+        startPeriod = endPeriod;
+      }
+    }
+
+    if (startPeriod === 'petang' || startPeriod === 'malam' || startPeriod === 'pm') {
+      if (startH < 12) startH += 12;
+    } else if (startPeriod === 'pagi' || startPeriod === 'am') {
+      if (startH === 12) startH = 0;
+    }
+
+    if (endPeriod === 'petang' || endPeriod === 'malam' || endPeriod === 'pm') {
       if (endH < 12) endH += 12;
-      if (startH < 12 && startH <= 6) startH += 12;
-    } else if (endH >= 1 && endH <= 6 && startH >= 1 && startH <= 6) {
-      startH += 12;
-      endH += 12;
+    } else if (endPeriod === 'pagi' || endPeriod === 'am') {
+      if (endH === 12) endH = 0;
     }
 
     const startMins = (startH * 60) + startM;
     let endMins = (endH * 60) + endM;
-    if (endMins <= startMins) endMins += 720;
+    if (endMins <= startMins) endMins += 1440; // Kitaran melepasi tengah malam (cth: 22:00 -> 04:00)
     const diff = endMins - startMins;
 
-    if (diff > 0 && diff <= 600) {
+    if (diff > 0 && diff <= 720) { // Had munasabah sehingga 12 jam
       return {
-        startTime: `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`,
+        startTime: `${String(startH % 24).padStart(2, '0')}:${String(startM).padStart(2, '0')}`,
         endTime: `${String(Math.floor(endMins / 60) % 24).padStart(2, '0')}:${String(endMins % 60).padStart(2, '0')}`,
         durationMinutes: diff
       };
@@ -108,24 +122,26 @@ function extractTimeRange(text) {
 }
 
 /**
- * Ekstrak waktu tetap / temujanji dari teks (cth: "pukul 2 petang", "pukul 14:00", "2pm", "10:30am")
+ * Ekstrak waktu tetap / temujanji dari teks (cth: "pukul 2 petang", "pukul 14:00", "2pm", "10:30am", "4.10 am", "10.00 malam")
  */
 function extractFixedTime(text) {
   const lower = text.toLowerCase();
 
-  // Format 1: "pukul 2:30 petang", "jam 10:00 pagi", "at 3:00 pm"
-  const timeRegex = /(?:pukul|jam|at|pada jam|waktu)?\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|petang|malam|tengah hari|am|pm)?/i;
-  
-  // Periksa frasa masa khusus
-  const match = lower.match(/(?:pukul|jam|at)\s+(\d{1,2})(?::(\d{2}))?\s*(pagi|petang|malam|tengah hari|am|pm)?/) ||
-                lower.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/);
+  // Format 1: Dengan penanda pagi/petang/malam/am/pm (cth: "4.10 am", "jam 10:00 pagi", "10 malam", "2pm")
+  const matchWithPeriod = lower.match(/(?:pukul|jam|at|waktu)?\s*(\d{1,2})(?:[:.](\d{2}))?\s*(pagi|petang|malam|tengah hari|am|pm)\b/i);
+  // Format 2: Dengan kata kunci "pukul / jam / at" (cth: "pukul 14:00", "jam 8", "pukul 2")
+  const matchWithPrefix = lower.match(/(?:pukul|jam|at)\s+(\d{1,2})(?:[:.](\d{2}))?/i);
+  // Format 3: Waktu berformat standard "HH:MM" atau "HH.MM" (cth: "14:00", "08:30")
+  const matchStandard = lower.match(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/);
+
+  const match = matchWithPeriod || matchWithPrefix || matchStandard;
 
   if (match) {
     let hours = parseInt(match[1], 10);
     let minutes = match[2] ? parseInt(match[2], 10) : 0;
     const period = (match[3] || '').toLowerCase();
 
-    if (hours > 24) return null;
+    if (hours > 24 || minutes > 59) return null;
 
     if (period === 'petang' || period === 'malam' || period === 'pm') {
       if (hours < 12) hours += 12;
@@ -133,12 +149,12 @@ function extractFixedTime(text) {
       if (hours !== 12 && hours < 6) hours += 12;
     } else if (period === 'pagi' || period === 'am') {
       if (hours === 12) hours = 0;
-    } else if (hours >= 1 && hours <= 6) {
+    } else if (hours >= 1 && hours <= 6 && !period && matchWithPrefix) {
       // Kebiasaannya jika 1-6 tanpa penanda pagi/petang untuk jadual harian, ia merujuk petang (cth: "meeting pukul 2")
       hours += 12;
     }
 
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    return `${String(hours % 24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
 
   return null;
@@ -187,6 +203,14 @@ function parseRawText(rawText) {
 
     if (!duration) {
       duration = defaultDuration;
+    }
+
+    // Pengendalian khas untuk tidur malam (elak tidur diset sekadar 35 minit)
+    if (lowerLine.includes('tidur malam') || lowerLine.includes('tidur berkualiti') || lowerLine.match(/^tidur\b/)) {
+      if (!lowerLine.includes('siang') && !lowerLine.includes('nap')) {
+        if (!duration || duration <= 45) duration = 360; // 6 jam tidur malam
+        if (!fixedTime) fixedTime = '22:00'; // 10:00 PM
+      }
     }
 
     // Tentukan keutamaan
@@ -403,10 +427,42 @@ function scheduleTasks(tasks, options = {}) {
     };
   });
 
-  // 2. Susun tugasan: pastikan tugasan dengan fixedTime tersusun mengikut urutan masa yang betul
+  // 2. Tentukan waktu kitaran mula jadual (Cycle Start Time)
+  let cycleStartMins = TimeEngine.timeToMinutes(startTime || '09:00');
+
+  // Semak jika senarai pengguna bermula dengan waktu malam/tidur (cth: "Tidur 10 malam" atau tugasan #1 ialah Tidur)
+  let isNightFirst = false;
+  if (orderedTasks.length > 0) {
+    const firstTitle = (orderedTasks[0].title || '').toLowerCase();
+    isNightFirst = firstTitle.includes('tidur') || firstTitle.includes('sleep');
+    if (isNightFirst) {
+      if (orderedTasks[0].fixedTime) {
+        cycleStartMins = TimeEngine.timeToMinutes(orderedTasks[0].fixedTime);
+      } else {
+        cycleStartMins = 1320; // 22:00 (10:00 PM)
+        orderedTasks[0].fixedTime = '22:00';
+        orderedTasks[0].isFixedAnchor = true;
+      }
+    } else if (orderedTasks[0].fixedTime && !firstTitle.includes('solat')) {
+      cycleStartMins = TimeEngine.timeToMinutes(orderedTasks[0].fixedTime);
+    }
+  }
+
+  // Fungsi pengiraan minit relatif terhadap waktu mula kitaran (menyokong kitaran melepasi tengah malam tanpa konflik)
+  function getRelativeMinutes(timeStr) {
+    if (!timeStr) return null;
+    let mins = TimeEngine.timeToMinutes(timeStr);
+    if (mins < cycleStartMins) {
+      // Waktu ini jatuh pada keesokan harinya selepas tengah malam (cth: 04:00 AM atau 05:55 AM selepas tidur 22:00)
+      mins += 1440;
+    }
+    return mins;
+  }
+
+  // 3. Susun tugasan mengikut turutan relatif masa yang betul
   orderedTasks.sort((a, b) => {
     if (a.fixedTime && b.fixedTime) {
-      return TimeEngine.timeToMinutes(a.fixedTime) - TimeEngine.timeToMinutes(b.fixedTime);
+      return getRelativeMinutes(a.fixedTime) - getRelativeMinutes(b.fixedTime);
     }
     return 0;
   });
@@ -415,7 +471,7 @@ function scheduleTasks(tasks, options = {}) {
   if (pacing === 'deep_work') {
     orderedTasks.sort((a, b) => {
       if (a.isFixedAnchor && b.isFixedAnchor) {
-        return TimeEngine.timeToMinutes(a.fixedTime) - TimeEngine.timeToMinutes(b.fixedTime);
+        return getRelativeMinutes(a.fixedTime) - getRelativeMinutes(b.fixedTime);
       }
       if (a.isFixedAnchor !== b.isFixedAnchor) return 0;
       const prioScore = { 'Tinggi': 3, 'Sederhana': 2, 'Rendah': 1 };
@@ -425,18 +481,18 @@ function scheduleTasks(tasks, options = {}) {
     });
   }
 
-  // 3. Tentukan waktu mula jadual keseluruhan
-  // Jika ada tugasan tetap sebelum startTime (cth: Subuh pada 05:55, sedangkan startTime 09:00),
-  // mulakan jadual dari waktu tetap terawal tersebut!
-  let currentMins = TimeEngine.timeToMinutes(startTime);
-  const fixedMinsList = orderedTasks
-    .filter(t => t.fixedTime)
-    .map(t => TimeEngine.timeToMinutes(t.fixedTime));
+  // 4. Tentukan waktu mula jadual keseluruhan
+  let currentMins = cycleStartMins;
+  if (!isNightFirst) {
+    const fixedMinsList = orderedTasks
+      .filter(t => t.fixedTime)
+      .map(t => TimeEngine.timeToMinutes(t.fixedTime));
 
-  if (fixedMinsList.length > 0) {
-    const minFixed = Math.min(...fixedMinsList);
-    if (minFixed < currentMins) {
-      currentMins = minFixed;
+    if (fixedMinsList.length > 0) {
+      const minFixed = Math.min(...fixedMinsList);
+      if (minFixed < currentMins && minFixed >= 300) { // Hanya jika munasabah waktu pagi (>= 05:00)
+        currentMins = minFixed;
+      }
     }
   }
 
@@ -462,7 +518,8 @@ function scheduleTasks(tasks, options = {}) {
     }
 
     // Semak jika masa sekarang telah mencecah waktu tengah hari dan belum dimasukkan rehat makan
-    if (includeBreaks && !hasInsertedLunch && currentMins >= 750 && currentMins <= 840) { // 12:30 PM - 2:00 PM
+    const normalizedCurrentMins = currentMins % 1440;
+    if (includeBreaks && !hasInsertedLunch && normalizedCurrentMins >= 750 && normalizedCurrentMins <= 840) { // 12:30 PM - 2:00 PM
       const lunchStart = TimeEngine.minutesToTime(currentMins);
       const lunchEndMins = currentMins + 45;
       const lunchEnd = TimeEngine.minutesToTime(lunchEndMins);
@@ -483,14 +540,18 @@ function scheduleTasks(tasks, options = {}) {
       hasInsertedLunch = true;
     }
 
-    // PENGUNCIAN WAKTU TETAP (FIXED ANCHOR):
-    // Jika tugasan mempunyai fixedTime (cth: Solat Subuh 05:55, Solat Zohor 13:20, Meeting 14:00),
-    // waktu mula tugasan ini WAJIB DIKUNCI TEPAT pada waktu tersebut!
+    // PENGUNCIAN WAKTU TETAP (FIXED ANCHOR DENGAN PENGIRAAN RELATIF):
+    // Jika tugasan mempunyai fixedTime (cth: Solat Subuh 05:55, Tidur 22:00, Meeting 14:00),
+    // waktu mula tugasan ini WAJIB DIKUNCI TEPAT pada waktu tersebut mengikut kitaran!
     let taskStartMins;
     if (item.fixedTime) {
-      const anchorMins = TimeEngine.timeToMinutes(item.fixedTime);
-      taskStartMins = anchorMins;
-      currentMins = anchorMins;
+      const anchorMins = getRelativeMinutes(item.fixedTime);
+      if (anchorMins >= currentMins) {
+        taskStartMins = anchorMins;
+      } else {
+        taskStartMins = currentMins;
+      }
+      currentMins = taskStartMins;
     } else {
       taskStartMins = currentMins;
     }
@@ -654,7 +715,7 @@ function detectSystemAction(text, currentTasks = []) {
 async function callGeminiAI(input, options = {}, apiKey) {
   if (!apiKey) return null;
 
-  const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
+  const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-flash-latest'];
   
   const isFollowup = typeof input === 'object' && input !== null && Boolean(input.followupPrompt);
   let prompt = '';
@@ -700,6 +761,20 @@ ARAHAN KRITIKAL & WAJIB:
 4. KEKALKAN KONTEKS: Jangan padam tugasan sedia ada kecuali jika pengguna secara jelas meminta untuk membuang atau menggantikannya.
 5. CADANGAN PENJIMATAN MASA: Sertakan cadangan pengurangan masa (suggestion) dan nilai penjimatan (suggestedReductionMinutes) jika ada.
 6. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT (fixedTime): Jika pengguna meminta waktu solat (Subuh, Zohor, Asar, Maghrib, Isya') atau sebarang waktu tetap (cth: "meeting 2 petang", "anjak ke 5:30 petang"), anda WAJIB mengisi 'fixedTime' dalam format 24-jam "HH:MM" (contoh tepat waktu KL: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45").
+7. KRONOLOGI LOGIK HARIAN & RUTIN TIDUR (WAJIB & SANGAT KRITIKAL):
+   - Susun senarai 'tasks' mengikut turutan masa sebenar kehidupan harian manusia secara logik:
+     * JIKA PENGGUNA MINTA TIDUR DAHULU (cth: "tido dulu", "patutnya tido dulu ni subuh dulu", atau senarai dimulakan dengan tidur 10 malam / 22:00 hingga 4 pagi):
+       Tugasan Tidur WAJIB diletakkan paling atas (Tugasan #1)!
+       Waktu mula tidur: waktu malam (cth: "22:00" / 10:00 PM), tamat: waktu bangun (cth: "04:00" / 4:00 AM).
+       Diikuti aktiviti bangun awal pagi (cth: Baca Al-Quran / Qiamullail 04:10 - 04:30).
+       KEMUDIAN Solat Subuh (05:55 - 06:10).
+       KEMUDIAN rutin pagi (cth: gosok/tukar berus gigi, cleanser & skincare, sarapan 06:15 - 07:00).
+       KEMUDIAN tugasan siang / trading / kerja.
+       JANGAN SEKALI-KALI meletakkan Solat Subuh sebelum Tidur jika pengguna meminta jadual bermula dengan tidur!
+     * JIKA JADUAL BERMULA WAKTU SIANG/PAGI (cth: Solat Subuh 05:55 atau kerja 09:00):
+       Aktiviti tidur malam (jika ada) hendaklah diletakkan di penghujung jadual (cth: 22:00 - 04:00), BUKAN di tengah-tengah antara Subuh dan rutin pagi.
+   - Wajib sertakan "startTime" ("HH:MM") dan "endTime" ("HH:MM") yang tepat dan berterusan untuk setiap objek dalam 'tasks'.
+   - Jika pengguna menghantar senarai rutin baharu (cth: bernombor 1, 2, 3, 4...), susun semula mengikut urutan tersebut dan gantikan tugasan lama yang bercanggah.
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
@@ -713,6 +788,8 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       "title": "Tajuk Tugasan Kemas",
       "category": "Kerja",
       "priority": "Tinggi",
+      "startTime": "HH:MM",
+      "endTime": "HH:MM",
       "durationMinutes": 45,
       "fixedTime": "HH:MM atau null",
       "suggestion": "Tip penjimatan masa jika ada",
@@ -747,7 +824,20 @@ ARAHAN KRITIKAL & WAJIB:
 5. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
 6. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
 7. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
-8. JAWAPAN PERBUALAN (conversationalReply): Berikan ulasan perbualan mesra gaya Gemini yang menyapa pengguna, menerangkan susunan jadual, dan memberi kata-kata perangsang.
+8. KRONOLOGI LOGIK HARIAN & RUTIN TIDUR (WAJIB & SANGAT KRITIKAL):
+   - Susun senarai 'tasks' mengikut turutan masa sebenar kehidupan harian manusia secara logik:
+     * JIKA SENARAI BERMULA DENGAN TIDUR (cth: "1. Tidur ...", "tidur 10 malam sampai 4 pagi" atau seumpamanya):
+       Tugasan Tidur WAJIB diletakkan paling atas (Tugasan #1)!
+       Waktu mula tidur: waktu malam (cth: "22:00" / 10:00 PM), tamat: waktu bangun (cth: "04:00" / 4:00 AM).
+       Diikuti aktiviti bangun awal pagi (cth: Baca Al-Quran / Qiamullail 04:10 - 04:30).
+       KEMUDIAN Solat Subuh (05:55 - 06:10).
+       KEMUDIAN rutin pagi (kebersihan, skincare, sarapan).
+       KEMUDIAN kerja / trading / aktiviti siang.
+       JANGAN letak Solat Subuh sebelum Tidur jika pengguna memulakan senarai dengan tidur!
+     * JIKA JADUAL BERMULA SIANG (cth: 08:00 atau 09:00):
+       Tidur malam (jika ada) diletakkan di akhir jadual (22:00 - 04:00).
+   - Wajib sertakan "startTime" ("HH:MM") dan "endTime" ("HH:MM") bagi setiap tugasan.
+9. JAWAPAN PERBUALAN (conversationalReply): Berikan ulasan perbualan mesra gaya Gemini yang menyapa pengguna, menerangkan susunan jadual, dan memberi kata-kata perangsang.
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
@@ -761,6 +851,8 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       "title": "Tajuk Tugasan Kemas",
       "category": "Kerja",
       "priority": "Tinggi",
+      "startTime": "HH:MM",
+      "endTime": "HH:MM",
       "durationMinutes": 45,
       "fixedTime": null,
       "suggestion": "Tip pengurangan masa atau pengoptimuman jika ada",
@@ -873,9 +965,10 @@ async function generateSmartSchedule({
           category: t.category || 'Kerja',
           priority: t.priority || 'Sederhana',
           durationMinutes: parseInt(t.durationMinutes, 10) || 30,
-          originalDurationMinutes: parseInt(t.durationMinutes, 10) || 30,
-          fixedTime: t.fixedTime || null,
-          isFixedAnchor: Boolean(t.fixedTime),
+          fixedTime: t.fixedTime || t.startTime || null,
+          startTime: t.startTime || null,
+          endTime: t.endTime || null,
+          isFixedAnchor: Boolean(t.fixedTime || t.startTime),
           geminiSuggestion: t.suggestion,
           geminiReduction: t.suggestedReductionMinutes || 0
         }));
