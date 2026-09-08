@@ -2350,7 +2350,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function appendChatMessage(role, text) {
+  function executeAiAction(action) {
+    if (!action || !action.type || action.type === 'NONE') return null;
+
+    let badgeText = null;
+
+    if (action.type === 'CLEAR_ALL_TASKS') {
+      window.Storage.clearAllTasks();
+      tasks = [];
+      renderAll();
+      showToast('🗑️ Semua jadual telah dipadam oleh AI', 'success');
+      playAudioChime('success');
+      triggerHaptic([30, 50]);
+      badgeText = 'Semua Jadual Dipadam';
+    } else if (action.type === 'DELETE_CATEGORY') {
+      const cat = (action.category || action.targetCategory || '').toLowerCase();
+      tasks = tasks.filter(t => (t.category || '').toLowerCase() !== cat);
+      window.Storage.saveTasks(tasks);
+      renderAll();
+      const displayCat = action.category || action.targetCategory || 'Kategori';
+      showToast(`🗑️ Tugasan ${displayCat} telah dipadam oleh AI`, 'success');
+      playAudioChime('success');
+      badgeText = `Tugasan ${displayCat} Dipadam`;
+    } else if (action.type === 'COMPLETE_ALL_TASKS') {
+      tasks = tasks.map(t => ({ ...t, completed: true }));
+      window.Storage.saveTasks(tasks);
+      renderAll();
+      showToast('🎉 Semua tugasan telah ditandakan siap oleh AI!', 'success');
+      playAudioChime('success');
+      badgeText = 'Semua Tugasan Ditandakan Selesai';
+    } else if (action.type === 'SET_START_TIME') {
+      if (action.time) {
+        settings.dayStartTime = action.time;
+        window.Storage.saveSettings(settings);
+        renderAll();
+        showToast(`⏰ Waktu mula hari ditukar ke ${action.time}`, 'success');
+        badgeText = `Waktu Mula Ditukar ke ${action.time}`;
+      }
+    }
+
+    return badgeText;
+  }
+
+  function appendChatMessage(role, text, actionBadge = null) {
     if (!aiChatThread || !text) return;
 
     aiConversationHistory.push({ role, content: text });
@@ -2375,6 +2417,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bubble.appendChild(header);
     bubble.appendChild(textElem);
+
+    if (actionBadge) {
+      const badge = document.createElement('div');
+      badge.className = 'chat-action-badge';
+      badge.innerHTML = `<span>⚡</span> <span>Tindakan Terlaksana: ${escapeHtml(actionBadge)}</span>`;
+      bubble.appendChild(badge);
+    }
 
     if (role === 'user') {
       wrap.appendChild(bubble);
@@ -2424,8 +2473,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       currentAiScheduleResult = data;
+      const actionBadge = executeAiAction(data.action);
       const reply = data.conversationalReply || data.summary?.productivityTip || 'Jadual anda telah dikemas kini mengikut perbincangan.';
-      appendChatMessage('model', reply);
+      appendChatMessage('model', reply, actionBadge);
       renderAiPreview(data);
       playAudioChime('chime');
       triggerHaptic([30, 40]);
@@ -2477,13 +2527,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       currentAiScheduleResult = data;
+      const actionBadge = executeAiAction(data.action);
 
       // Inisialisasi sembang interaktif Gemini
       aiConversationHistory = [];
       if (aiChatThread) aiChatThread.innerHTML = '';
       appendChatMessage('user', rawText);
       const reply = data.conversationalReply || data.summary?.productivityTip || 'Jadual anda telah disusun tanpa sebarang pertindihan waktu.';
-      appendChatMessage('model', reply);
+      appendChatMessage('model', reply, actionBadge);
 
       renderAiPreview(data);
       showAiSection('results');
@@ -2539,6 +2590,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (aiPreviewTasksList) {
       aiPreviewTasksList.innerHTML = '';
+
+      if (scheduledTasks.length === 0) {
+        aiPreviewTasksList.innerHTML = `
+          <div class="glass-card" style="text-align: center; padding: 28px 16px; margin-bottom: 12px; background: rgba(15, 23, 42, 0.5); border: 1px dashed rgba(255, 255, 255, 0.12);">
+            <div style="font-size: 2rem; margin-bottom: 6px;">🗑️</div>
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;">Jadual Kosong / Telah Dikosongkan</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; line-height: 1.45;">
+              Semua jadual telah dipadam. Anda boleh menaip senarai tugasan baharu di bawah atau meminta idea aktiviti daripada AI.
+            </div>
+          </div>
+        `;
+        if (btnApplyAiSchedule) btnApplyAiSchedule.style.display = 'none';
+        return;
+      } else {
+        if (btnApplyAiSchedule) btnApplyAiSchedule.style.display = 'flex';
+      }
 
       scheduledTasks.forEach((task, idx) => {
         const card = document.createElement('div');

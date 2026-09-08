@@ -40,14 +40,14 @@ if (styleTagRegex.test(html)) {
 
 // Replace scripts at the bottom with bundle.js and fallbacks
 const scriptSection = `  <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
-  <script src="/js/bundle.js?v=10.0"></script>
+  <script src="/js/bundle.js?v=11.0"></script>
   <script>
     // Fallback sekiranya bundle.js lambat / terganggu
     if (!window.DailyPulseLoaded && !window.Storage) {
       console.warn('Memuatkan skrip modular sebagai sandaran...');
       ['js/i18n.js', 'js/timeEngine.js', 'js/storage.js', 'js/timer.js', 'js/analytics.js', 'js/app.js'].forEach(function(src) {
         var s = document.createElement('script');
-        s.src = '/' + src + '?v=10.0';
+        s.src = '/' + src + '?v=11.0';
         s.defer = true;
         document.body.appendChild(s);
       });
@@ -63,8 +63,8 @@ if (scriptRegex.test(html)) {
 }
 
 // Bump version query params in index.html to bust aggressive browser caches
-html = html.replace(/style\.css\?v=[^"]+/g, 'style.css?v=10.0');
-html = html.replace(/bundle\.js\?v=[^"]+/g, 'bundle.js?v=10.0');
+html = html.replace(/style\.css\?v=[^"]+/g, 'style.css?v=11.0');
+html = html.replace(/bundle\.js\?v=[^"]+/g, 'bundle.js?v=11.0');
 
 fs.writeFileSync(path.join(baseDir, 'index.html'), html, 'utf8');
 console.log('index.html updated successfully! File size:', html.length, 'bytes');

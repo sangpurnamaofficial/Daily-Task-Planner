@@ -559,7 +559,7 @@ function scheduleTasks(tasks, options = {}) {
       totalFocusFormatted: TimeEngine.formatDuration(totalFocusMinutes),
       totalBreakMinutes,
       totalBreakFormatted: TimeEngine.formatDuration(totalBreakMinutes),
-      startTime,
+    startTime,
       projectedEndTime,
       totalSavedMinutes,
       isOverloaded,
@@ -567,6 +567,84 @@ function scheduleTasks(tasks, options = {}) {
       productivityTip
     }
   };
+}
+
+/**
+ * Pengecaman Niat Tindakan Sistem Secara Terbuka (Agentic Action Intent Detection)
+ * Membolehkan pengguna memberi arahan bebas seperti:
+ * - "delete semua jadual", "padam semua task", "clear all", "kosongkan jadual", "buang semua", "reset jadual"
+ * - "padam task kerja", "delete aktiviti kesihatan"
+ * - "tandakan semua siap", "mark all done"
+ * - "tukar waktu mula ke 06:00"
+ */
+function detectSystemAction(text, currentTasks = []) {
+  if (!text || typeof text !== 'string') return null;
+  const lower = text.toLowerCase().trim();
+
+  // 1. Padam Mengikut Kategori (Periksa sebelum padam semua untuk ketepatan)
+  const catMatch = lower.match(/(?:padam|delete|buang|clear)\s+(?:semua\s+)?(?:task|tugasan|jadual|aktiviti)?\s*(kerja|work|belajar|study|kesihatan|health|peribadi|personal)\b/i) ||
+                   lower.match(/(?:padam|delete|buang|clear)\s+(kerja|work|belajar|study|kesihatan|health|peribadi|personal)\b/i);
+  if (catMatch) {
+    let rawCat = catMatch[1].toLowerCase();
+    let cat = 'Kerja';
+    if (rawCat === 'kerja' || rawCat === 'work') cat = 'Kerja';
+    else if (rawCat === 'belajar' || rawCat === 'study') cat = 'Belajar';
+    else if (rawCat === 'kesihatan' || rawCat === 'health') cat = 'Kesihatan';
+    else if (rawCat === 'peribadi' || rawCat === 'personal') cat = 'Peribadi';
+
+    return {
+      type: 'DELETE_CATEGORY',
+      category: cat,
+      description: `Padam semua tugasan kategori ${cat}`,
+      message: `Baik, saya telah membuang semua tugasan kategori ${cat} daripada jadual anda.`
+    };
+  }
+
+  // 2. Padam / Kosongkan Semua Jadual
+  if (
+    /(?:delete|padam|buang|clear|kosongkan|hapus|reset)\s+(?:semua|all|kesemua|semuanya)\b/i.test(lower) ||
+    /^(?:clear\s*all|reset\s*jadual|kosongkan\s*jadual|padam\s*semua|delete\s*all)$/i.test(lower) ||
+    /(?:padam|delete|clear|buang|kosongkan|hapus|reset)\s+(?:semua\s+|all\s+)?(?:jadual|task|tugasan|schedule)/i.test(lower) ||
+    /(?:kosongkan|reset)\s+(?:jadual|task)/i.test(lower) ||
+    lower.includes('kosongkan jadual') ||
+    lower === 'delete all' || lower === 'clear all' || lower === 'kosongkan jadual' || lower === 'padam semua'
+  ) {
+    return {
+      type: 'CLEAR_ALL_TASKS',
+      description: 'Padam semua jadual harian',
+      message: 'Baik, saya telah memadamkan semua jadual harian anda. Papan pemuka kini bersih dan sedia untuk perancangan aktiviti baharu! ✨'
+    };
+  }
+
+  // 3. Tandakan Semua Siap
+  if (
+    /(?:tandakan|mark|set)\s+(?:semua|all)\s*(?:siap|selesai|completed|done)/i.test(lower) ||
+    /(?:semua|all)\s*(?:task|tugasan)?\s*(?:dah|sudah)?\s*(?:siap|selesai|done)/i.test(lower)
+  ) {
+    return {
+      type: 'COMPLETE_ALL_TASKS',
+      description: 'Tandakan semua tugasan siap',
+      message: 'Hebat! Semua tugasan harian anda telah ditandakan sebagai selesai. Tahniah atas produktiviti hari ini! 🎉'
+    };
+  }
+
+  // 4. Tukar Waktu Mula
+  const startMatch = lower.match(/(?:tukar|set|ubah)?\s*(?:waktu|masa)?\s*(?:mula|bangun|start)\s*(?:ke|kepada|pukul|jam)?\s*(\d{1,2}(?::\d{2})?\s*(?:pagi|petang|am|pm)?)/i);
+  if (startMatch && (lower.includes('mula') || lower.includes('bangun') || lower.includes('start'))) {
+    const timeVal = TimeEngine.timeToMinutes(startMatch[1]);
+    if (timeVal !== null) {
+      const timeStr = TimeEngine.minutesToTime(timeVal);
+      return {
+        type: 'SET_START_TIME',
+        time: timeStr,
+        targetTime: timeStr,
+        description: `Tukar waktu mula hari ke ${timeStr}`,
+        message: `Baik, waktu mula hari anda telah ditukar kepada ${timeStr}.`
+      };
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -613,14 +691,23 @@ KONFIGURASI:
 
 ARAHAN KRITIKAL & WAJIB:
 1. JAWAPAN PERBUALAN (conversationalReply): Jawab soalan pengguna dengan mesra, terperinci, dan menyemangatkan dalam Bahasa Melayu. Jika pengguna minta cadangan (contoh: cadang jenis senaman petang, cadang teknik fokus, susunan solat/rehat), berikan jawapan cadangan yang terbuka, kreatif, dan praktikal.
-2. JAMINAN 100% TUGASAN DILIPUTI (tasks): Kemas kini senarai tugasan agar mencerminkan arahan pengguna. PASTIKAN SETIAP TUGASAN yang dibincangkan (termasuk senaman, kerja, solat, makan, rehat) WAJIB wujud sebagai objek tugasan dengan durasi dan waktu yang tepat! JANGAN TINGGALKAN mana-mana aktiviti.
-3. KEKALKAN KONTEKS: Jangan padam tugasan sedia ada kecuali jika pengguna secara jelas meminta untuk membuang atau menggantikannya.
-4. CADANGAN PENJIMATAN MASA: Sertakan cadangan pengurangan masa (suggestion) dan nilai penjimatan (suggestedReductionMinutes) jika ada.
-5. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT (fixedTime): Jika pengguna meminta waktu solat (Subuh, Zohor, Asar, Maghrib, Isya') atau sebarang waktu tetap (cth: "meeting 2 petang", "anjak ke 5:30 petang"), anda WAJIB mengisi 'fixedTime' dalam format 24-jam "HH:MM" (contoh tepat waktu KL: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45"). JANGAN sesekali letak null jika waktu tersebut adalah waktu solat atau waktu tetap yang diminta!
+2. KUASA TINDAKAN SISTEM (action): Anda adalah Autonomous Agent yang mempunyai kuasa melaksanakan tindakan aplikasi:
+   - Jika pengguna mahu memadam/mengosongkan semua jadual (cth: "delete semua jadual", "padam semua task", "clear all", "kosongkan jadual"), pulangkan "action": { "type": "CLEAR_ALL_TASKS", "description": "Padam semua jadual harian" }, "tasks": [], dan sahkan dalam conversationalReply bahawa semua jadual telah dipadamkan.
+   - Jika pengguna mahu memadam kategori tertentu (cth: "padam task kerja"), pulangkan "action": { "type": "DELETE_CATEGORY", "targetCategory": "Kerja", "description": "Padam tugasan kategori Kerja" } dan senaraikan baki tugasan dalam "tasks".
+   - Jika pengguna mahu tandakan semua siap (cth: "semua task dah siap"), pulangkan "action": { "type": "COMPLETE_ALL_TASKS", "description": "Tandakan semua tugasan siap" }.
+   - Jika tiada arahan khas, pulangkan "action": { "type": "NONE" }.
+3. JAMINAN 100% TUGASAN DILIPUTI (tasks): Jika bukan arahan memadam semua jadual, pastikan SETIAP TUGASAN yang dibincangkan wujud sebagai objek tugasan dengan durasi dan waktu yang tepat!
+4. KEKALKAN KONTEKS: Jangan padam tugasan sedia ada kecuali jika pengguna secara jelas meminta untuk membuang atau menggantikannya.
+5. CADANGAN PENJIMATAN MASA: Sertakan cadangan pengurangan masa (suggestion) dan nilai penjimatan (suggestedReductionMinutes) jika ada.
+6. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT (fixedTime): Jika pengguna meminta waktu solat (Subuh, Zohor, Asar, Maghrib, Isya') atau sebarang waktu tetap (cth: "meeting 2 petang", "anjak ke 5:30 petang"), anda WAJIB mengisi 'fixedTime' dalam format 24-jam "HH:MM" (contoh tepat waktu KL: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45").
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
-  "conversationalReply": "Jawapan perbualan mesra, cadangan terbuka (cth: jenis senaman), dan huraian ringkas perubahan jadual dalam Bahasa Melayu",
+  "conversationalReply": "Jawapan perbualan mesra, cadangan terbuka (cth: jenis senaman), dan huraian ringkas perubahan jadual atau pengesahan tindakan dalam Bahasa Melayu",
+  "action": {
+    "type": "CLEAR_ALL_TASKS | DELETE_CATEGORY | COMPLETE_ALL_TASKS | NONE",
+    "description": "Penerangan tindakan jika ada"
+  },
   "tasks": [
     {
       "title": "Tajuk Tugasan Kemas",
@@ -651,17 +738,24 @@ KONFIGURASI:
 - Masa Rehat Antara Tugasan: ${options.bufferMinutes || 10} minit
 
 ARAHAN KRITIKAL & WAJIB:
-1. JAMINAN 100% TUGASAN DILIPUTI: Setiap satu aktiviti atau tugasan yang disebut oleh pengguna (termasuk senaman, solat, makan, mesyuarat, kerja, rehat) WAJIB dijana sebagai satu objek dalam senarai 'tasks'. JANGAN TINGGALKAN walau satu pun aktiviti tanpa tugasan dan masa!
-2. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT: Jika ada waktu khusus disebut atau waktu solat (cth: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45", atau meeting "14:00"), set 'fixedTime' dalam format 24-jam "HH:MM". Jika aktiviti bebas masa, set fixedTime: null.
-3. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
-4. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
-5. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
-6. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
-7. JAWAPAN PERBUALAN (conversationalReply): Berikan ulasan perbualan mesra gaya Gemini yang menyapa pengguna, menerangkan susunan jadual, dan memberi kata-kata perangsang.
+1. KUASA TINDAKAN SISTEM (action):
+   - Jika pengguna memberi arahan untuk memadam atau mengosongkan jadual (cth: "delete semua jadual", "padam semua task", "clear all", "kosongkan jadual"), pulangkan "action": { "type": "CLEAR_ALL_TASKS", "description": "Padam semua jadual harian" }, "tasks": [], dan terangkan dalam conversationalReply bahawa jadual telah dipadamkan.
+   - Jika tiada arahan sistem khas, pulangkan "action": { "type": "NONE" }.
+2. JAMINAN 100% TUGASAN DILIPUTI: Jika bukan arahan padam, setiap satu aktiviti atau tugasan yang disebut oleh pengguna WAJIB dijana sebagai satu objek dalam senarai 'tasks'.
+3. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT: Jika ada waktu khusus disebut atau waktu solat (cth: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45", atau meeting "14:00"), set 'fixedTime' dalam format 24-jam "HH:MM". Jika aktiviti bebas masa, set fixedTime: null.
+4. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
+5. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
+6. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
+7. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
+8. JAWAPAN PERBUALAN (conversationalReply): Berikan ulasan perbualan mesra gaya Gemini yang menyapa pengguna, menerangkan susunan jadual, dan memberi kata-kata perangsang.
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
   "conversationalReply": "Ulasan mesra & penerangan pelan jadual dalam Bahasa Melayu",
+  "action": {
+    "type": "CLEAR_ALL_TASKS | DELETE_CATEGORY | COMPLETE_ALL_TASKS | NONE",
+    "description": "Penerangan tindakan jika ada"
+  },
   "tasks": [
     {
       "title": "Tajuk Tugasan Kemas",
@@ -673,7 +767,7 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       "suggestedReductionMinutes": 15
     }
   ],
-  "productivityTip": "Nasihat produktiviti peribadi ringkas dalam Bahasa Melayu"
+  "productivityTip": "Nasihat produktiviti ringkas dalam Bahasa Melayu"
 }`;
   }
 
@@ -717,7 +811,7 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       candidateText = candidateText.replace(/,\s*([\]}])/g, '$1');
 
       const parsedJson = JSON.parse(candidateText);
-      if (Array.isArray(parsedJson.tasks) && parsedJson.tasks.length > 0) {
+      if (parsedJson && (Array.isArray(parsedJson.tasks) || parsedJson.action || parsedJson.conversationalReply)) {
         return parsedJson;
       }
     } catch (err) {
@@ -749,33 +843,59 @@ async function generateSmartSchedule({
   let isGeminiUsed = false;
   let geminiTip = null;
   let conversationalReply = null;
+  let action = null;
+
+  const inputText = followupPrompt || rawText;
+  const localAction = detectSystemAction(inputText, currentTasks);
+  if (localAction) {
+    action = localAction;
+  }
 
   if (geminiKey) {
     const inputPayload = followupPrompt ? { followupPrompt, history, currentTasks } : rawText;
     const geminiResult = await callGeminiAI(inputPayload, { startTime, endTime, pacing, bufferMinutes }, geminiKey);
-    if (geminiResult && Array.isArray(geminiResult.tasks) && geminiResult.tasks.length > 0) {
+    if (geminiResult) {
       isGeminiUsed = true;
       geminiTip = geminiResult.productivityTip || null;
       conversationalReply = geminiResult.conversationalReply || geminiTip;
-      parsedTasks = geminiResult.tasks.map((t, idx) => ({
-        id: `ai-task-${Date.now()}-${idx + 1}`,
-        rawTitle: t.title,
-        title: t.title,
-        category: t.category || 'Kerja',
-        priority: t.priority || 'Sederhana',
-        durationMinutes: parseInt(t.durationMinutes, 10) || 30,
-        originalDurationMinutes: parseInt(t.durationMinutes, 10) || 30,
-        fixedTime: t.fixedTime || null,
-        isFixedAnchor: Boolean(t.fixedTime),
-        geminiSuggestion: t.suggestion,
-        geminiReduction: t.suggestedReductionMinutes || 0
-      }));
+
+      if (geminiResult.action && geminiResult.action.type && geminiResult.action.type !== 'NONE') {
+        action = geminiResult.action;
+      }
+
+      if (action && action.type === 'CLEAR_ALL_TASKS') {
+        parsedTasks = [];
+      } else if (Array.isArray(geminiResult.tasks)) {
+        parsedTasks = geminiResult.tasks.map((t, idx) => ({
+          id: `ai-task-${Date.now()}-${idx + 1}`,
+          rawTitle: t.title,
+          title: t.title,
+          category: t.category || 'Kerja',
+          priority: t.priority || 'Sederhana',
+          durationMinutes: parseInt(t.durationMinutes, 10) || 30,
+          originalDurationMinutes: parseInt(t.durationMinutes, 10) || 30,
+          fixedTime: t.fixedTime || null,
+          isFixedAnchor: Boolean(t.fixedTime),
+          geminiSuggestion: t.suggestion,
+          geminiReduction: t.suggestedReductionMinutes || 0
+        }));
+      }
     }
   }
 
-  // Jika Gemini tidak digunakan atau tiada hasil, guna Enjin Heuristik Tempatan (100% Pantas & Mandiri)
-  if (parsedTasks.length === 0) {
-    if (followupPrompt && currentTasks.length > 0) {
+  // Jika Gemini tidak digunakan atau localAction dikesan
+  if (!isGeminiUsed) {
+    if (action && action.type === 'CLEAR_ALL_TASKS') {
+      parsedTasks = [];
+      conversationalReply = action.message;
+    } else if (action && action.type === 'DELETE_CATEGORY') {
+      const catToDelete = (action.category || action.targetCategory || '').toLowerCase();
+      parsedTasks = currentTasks.filter(t => (t.category || '').toLowerCase() !== catToDelete);
+      conversationalReply = action.message || `Semua tugasan kategori ${action.category || action.targetCategory} telah dipadam.`;
+    } else if (action && action.type === 'COMPLETE_ALL_TASKS') {
+      parsedTasks = currentTasks.map(t => ({ ...t, completed: true }));
+      conversationalReply = action.message || 'Semua tugasan telah ditandakan sebagai siap.';
+    } else if (followupPrompt && currentTasks.length > 0) {
       // Heuristic follow-up: tambah tugasan baru jika diminta
       const newItems = parseRawText(followupPrompt);
       parsedTasks = [...currentTasks, ...newItems];
@@ -784,6 +904,33 @@ async function generateSmartSchedule({
       parsedTasks = parseRawText(rawText);
       conversationalReply = `Jadual anda telah dianalisis dan disusun mengikut waktu berturutan.`;
     }
+  }
+
+  // Jika tindakan adalah memadam semua jadual
+  if (action && action.type === 'CLEAR_ALL_TASKS') {
+    return {
+      success: true,
+      action,
+      conversationalReply: conversationalReply || action.message || 'Semua jadual telah dipadam.',
+      scheduledTasks: [],
+      appliedCount: 0,
+      totalSavedMinutes: 0,
+      isGeminiUsed,
+      summary: {
+        totalFocusMinutes: 0,
+        totalFocusFormatted: '0j 0m',
+        totalBreakMinutes: 0,
+        totalBreakFormatted: '0j 0m',
+        totalPlannedMinutes: 0,
+        formattedPlanned: '0j 0m',
+        efficiencyScore: 100,
+        totalSavedMinutes: 0,
+        productivityTip: geminiTip || 'Papan pemuka anda kini bersih daripada sebarang jadual lama.',
+        conversationalReply: conversationalReply || action.message || 'Semua jadual telah dipadam.',
+        isGemini: isGeminiUsed,
+        aiEngine: isGeminiUsed ? 'Google Gemini AI (Neural Model)' : 'Heuristik Pintar Tempatan (Offline Mode)'
+      }
+    };
   }
 
   // Laksanakan penjadualan masa berperingkat & cadangan pengurangan masa
@@ -796,6 +943,7 @@ async function generateSmartSchedule({
     applySuggestions
   });
 
+  scheduledResult.action = action;
   scheduledResult.conversationalReply = conversationalReply || 'Jadual anda telah dioptimumkan secara seimbang tanpa pertindihan waktu.';
   scheduledResult.summary.conversationalReply = scheduledResult.conversationalReply;
   scheduledResult.summary.aiEngine = isGeminiUsed ? 'Google Gemini AI (Neural Model)' : 'Heuristik Pintar Tempatan (Offline Mode)';
@@ -813,6 +961,7 @@ module.exports = {
   extractFixedTime,
   extractTimeRange,
   generateTaskSuggestions,
+  detectSystemAction,
   scheduleTasks,
   generateSmartSchedule,
   callGeminiAI

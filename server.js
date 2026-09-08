@@ -190,6 +190,11 @@ const server = http.createServer(async (req, res) => {
           const task = db.addTask(body, userId);
           return sendJSON(res, 201, { success: true, task });
         }
+        if (req.method === 'DELETE') {
+          // Clear all tasks for user
+          db.replaceTasks([], userId);
+          return sendJSON(res, 200, { success: true, message: 'Semua tugasan telah dipadam', tasks: [] });
+        }
       }
 
       const taskMatch = pathname.match(/^\/api\/tasks\/([^/]+)$/);

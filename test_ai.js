@@ -242,6 +242,66 @@ runTest('Cadangan Gemini AI diberi keutamaan tertinggi dalam generateTaskSuggest
   assert.strictEqual(suggestions[0].timeSavedMinutes, 30);
 });
 
+// 12. Ujian Pengesanan Tindakan Sistem Agen AI (detectSystemAction)
+runTest('Kesan tindakan sistem CLEAR_ALL_TASKS dengan pelbagai variasi Bahasa Melayu/Inggeris', () => {
+  const variations = [
+    'delete semua jadual',
+    'padam semua task',
+    'clear all schedule',
+    'kosongkan jadual hari ini',
+    'buang semua jadual',
+    'reset jadual'
+  ];
+
+  for (const text of variations) {
+    const action = aiEngine.detectSystemAction(text, [{ id: 1, title: 'Sample' }]);
+    assert.ok(action, `Patut kesan tindakan bagi: "${text}"`);
+    assert.strictEqual(action.type, 'CLEAR_ALL_TASKS', `Jenis tindakan patut CLEAR_ALL_TASKS untuk: "${text}"`);
+  }
+});
+
+// 13. Ujian Pengesanan Tindakan DELETE_CATEGORY
+runTest('Kesan tindakan sistem DELETE_CATEGORY mengikut kategori spesifik', () => {
+  const action = aiEngine.detectSystemAction('padam semua task kerja', []);
+  assert.ok(action);
+  assert.strictEqual(action.type, 'DELETE_CATEGORY');
+  assert.strictEqual(action.category, 'Kerja');
+});
+
+// 14. Ujian Pengesanan Tindakan COMPLETE_ALL_TASKS
+runTest('Kesan tindakan sistem COMPLETE_ALL_TASKS', () => {
+  const action = aiEngine.detectSystemAction('tandakan semua tugasan siap', []);
+  assert.ok(action);
+  assert.strictEqual(action.type, 'COMPLETE_ALL_TASKS');
+});
+
+// 15. Ujian Pengesanan Tindakan SET_START_TIME
+runTest('Kesan tindakan sistem SET_START_TIME dengan waktu yang betul', () => {
+  const action = aiEngine.detectSystemAction('tukar waktu mula ke 06:30', []);
+  assert.ok(action);
+  assert.strictEqual(action.type, 'SET_START_TIME');
+  assert.strictEqual(action.targetTime, '06:30');
+});
+
+// 16. Ujian Integrasi generateSmartSchedule dengan Tindakan CLEAR_ALL_TASKS
+runTest('generateSmartSchedule mengembalikan respons tindakan CLEAR_ALL_TASKS tanpa task lama', async () => {
+  const existingTasks = [
+    { id: 't1', title: 'Tugasan Lama 1', durationMinutes: 30, startTime: '09:00', endTime: '09:30' },
+    { id: 't2', title: 'Tugasan Lama 2', durationMinutes: 60, startTime: '09:40', endTime: '10:40' }
+  ];
+
+  const result = await aiEngine.generateSmartSchedule({
+    rawText: 'tolong padam semua jadual aku sekarang',
+    currentTasks: existingTasks,
+    isFollowup: true
+  });
+
+  assert.ok(result.action, 'Respons patut mempunyai atribut action');
+  assert.strictEqual(result.action.type, 'CLEAR_ALL_TASKS');
+  assert.strictEqual(result.scheduledTasks.length, 0, 'scheduledTasks patut kosong tanpa menghidupkan tugasan lama');
+  assert.ok(result.conversationalReply, 'Patut mempunyai balasan mesra AI');
+});
+
 console.log(`\n======================================================`);
-console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 11 LULUS 100%!`);
+console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 16 LULUS 100%!`);
 console.log(`======================================================\n`);

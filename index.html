@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=10.0">
+  <link rel="stylesheet" href="/css/style.css?v=11.0">
   <!-- Google Identity Services (Sign in with Google) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
@@ -3435,6 +3435,21 @@ body::before {
   word-break: break-word;
 }
 
+.chat-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-full);
+  color: #34d399;
+  font-size: 0.72rem;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+
 /* Follow-up Interactive Input Bar */
 .ai-followup-wrapper {
   background: rgba(15, 23, 42, 0.85);
@@ -4473,8 +4488,10 @@ body::before {
 
           <!-- Quick Action Chips -->
           <div class="ai-quick-chips-scroll">
+            <button type="button" class="ai-quick-chip" data-prompt="Tolong padam semua jadual harian saya sekarang">🗑️ Padam semua jadual</button>
             <button type="button" class="ai-quick-chip" data-prompt="Tolong cadangkan jenis senaman petang yang sesuai dan masukkan dalam jadual">🏃 Cadang senaman petang</button>
             <button type="button" class="ai-quick-chip" data-prompt="Anjakkan waktu solat asar ke 4:30 petang dan sesuaikan aktiviti lain">⏱️ Anjakkan masa solat</button>
+            <button type="button" class="ai-quick-chip" data-prompt="Tandakan semua tugasan hari ini sebagai siap">✅ Tandakan semua siap</button>
             <button type="button" class="ai-quick-chip" data-prompt="Boleh tolong pendekkan lagi jadual keseluruhan agar tamat sebelum jam 5 petang?">⚡ Padatkan jadual</button>
             <button type="button" class="ai-quick-chip" data-prompt="Tambah satu lagi aktiviti beli barang dapur dan basuh kereta sebelum malam">➕ Tambah aktiviti</button>
           </div>
@@ -4640,14 +4657,14 @@ body::before {
   </div>
 
   <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
-  <script src="/js/bundle.js?v=10.0"></script>
+  <script src="/js/bundle.js?v=11.0"></script>
   <script>
     // Fallback sekiranya bundle.js lambat / terganggu
     if (!window.DailyPulseLoaded && !window.Storage) {
       console.warn('Memuatkan skrip modular sebagai sandaran...');
       ['js/i18n.js', 'js/timeEngine.js', 'js/storage.js', 'js/timer.js', 'js/analytics.js', 'js/app.js'].forEach(function(src) {
         var s = document.createElement('script');
-        s.src = '/' + src + '?v=10.0';
+        s.src = '/' + src + '?v=11.0';
         s.defer = true;
         document.body.appendChild(s);
       });

@@ -337,6 +337,26 @@ const Storage = {
     }
   },
 
+  clearAllTasks() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify([]));
+      if (typeof fetch !== 'undefined') {
+        fetch('/api/tasks', {
+          method: 'DELETE',
+          headers: this.getAuthHeaders()
+        }).catch(() => {
+          fetch('/api/tasks', {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ tasks: [] })
+          }).catch(() => {});
+        });
+      }
+    } catch (e) {
+      console.error('Ralat mengosongkan tugasan:', e);
+    }
+  },
+
   getGoals() {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.GOALS);
