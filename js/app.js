@@ -2329,6 +2329,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function bindAiScheduleEvents() {
+    const dnavAi = document.getElementById('dnav-ai-schedule');
+    const heroAi = document.getElementById('btn-hero-ai-schedule');
+    if (dnavAi) dnavAi.addEventListener('click', openAiModal);
+    if (heroAi) heroAi.addEventListener('click', openAiModal);
+
     if (btnOpenAiHeader) btnOpenAiHeader.addEventListener('click', openAiModal);
     if (btnOpenAiTasks) btnOpenAiTasks.addEventListener('click', openAiModal);
     if (btnOpenAiDrawer) btnOpenAiDrawer.addEventListener('click', openAiModal);

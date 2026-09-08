@@ -2642,3 +2642,96 @@ body::before {
 .btn-apply-ai:hover {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 }
+
+/* AI Hero Banner on Dashboard */
+.ai-hero-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.22) 50%, rgba(217, 70, 239, 0.15) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ai-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.ai-hero-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.ai-hero-desc {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  max-width: 520px;
+}
+
+.btn-hero-cta {
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .ai-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-hero-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* AI Top Nav Button */
+.btn-nav-ai {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(217, 70, 239, 0.2)) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  color: #e9d5ff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+}
+
+.btn-nav-ai:hover {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(217, 70, 239, 0.5);
+  transform: translateY(-1px);
+}

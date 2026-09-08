@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=4.0">
+  <link rel="stylesheet" href="/css/style.css?v=5.0">
   <!-- Google Identity Services (Sign in with Google) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
@@ -2665,6 +2665,99 @@ body::before {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 }
 
+/* AI Hero Banner on Dashboard */
+.ai-hero-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.22) 50%, rgba(217, 70, 239, 0.15) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ai-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.ai-hero-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.ai-hero-desc {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  max-width: 520px;
+}
+
+.btn-hero-cta {
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .ai-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-hero-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* AI Top Nav Button */
+.btn-nav-ai {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(217, 70, 239, 0.2)) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  color: #e9d5ff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+}
+
+.btn-nav-ai:hover {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(217, 70, 239, 0.5);
+  transform: translateY(-1px);
+}
+
   </style>
 </head>
 <body>
@@ -2704,6 +2797,10 @@ body::before {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
           <span id="txt-dnav-analytics">Analisis</span>
         </button>
+        <button class="desktop-nav-item btn-nav-ai" id="dnav-ai-schedule" title="✨ Pembantu Jadual Pintar AI">
+          <span style="font-size: 0.95rem; line-height: 1;">✨</span>
+          <span id="txt-dnav-ai">AI Jadual Pintar</span>
+        </button>
       </nav>
 
       <div class="header-actions">
@@ -2737,8 +2834,9 @@ body::before {
             </div>
           </div>
 
-          <button class="icon-btn icon-btn-ai" id="btn-open-ai-schedule" title="✨ Pembantu Jadual Pintar AI" aria-label="AI Schedule">
-            <span style="font-size: 1.1rem; line-height: 1;">✨</span>
+          <button class="btn-ai-sparkle" id="btn-open-ai-schedule" title="✨ Pembantu Jadual Pintar AI" style="padding: 6px 12px; margin-left: 2px;">
+            <span>✨</span>
+            <span>AI Jadual</span>
           </button>
           <button class="icon-btn" id="btn-auto-schedule" title="Auto-Susun Jadual Pintar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2771,6 +2869,21 @@ body::before {
       <section id="tab-dashboard" class="tab-pane active">
         <div class="dashboard-grid">
           <div class="dashboard-col-left">
+            <!-- Banner AI Jadual Pintar (Hero Call-to-Action) -->
+            <div class="glass-card ai-hero-banner" id="dashboard-ai-banner">
+              <div class="ai-hero-left">
+                <div class="ai-hero-tag">
+                  <span>✨</span>
+                  <span>PEMBANTU JADUAL PINTAR AI</span>
+                </div>
+                <h3 class="ai-hero-title">Susun Jadual Harian Sepantas Kilat dengan AI</h3>
+                <p class="ai-hero-desc">Taip atau <em>paste</em> nota tugasan santai anda. AI akan susun waktu mula/tamat secara automatik &amp; beri cadangan penjimatan masa!</p>
+              </div>
+              <button type="button" class="btn-ai-sparkle btn-hero-cta" id="btn-hero-ai-schedule">
+                ✨ Buka AI Jadual Pintar
+              </button>
+            </div>
+
             <!-- Daily Time Budget Gauge -->
             <div class="glass-card budget-card" id="daily-budget-card">
               <div class="budget-meta">
@@ -3552,7 +3665,7 @@ body::before {
   </div>
 
   <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
-  <script src="/js/bundle.js?v=4.0"></script>
+  <script src="/js/bundle.js?v=5.0"></script>
   <script>
     // Fallback sekiranya bundle.js lambat / terganggu
     if (!window.DailyPulseLoaded && !window.Storage) {

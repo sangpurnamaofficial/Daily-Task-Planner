@@ -62,6 +62,10 @@ if (scriptRegex.test(html)) {
   console.log('Script regex did not match, please inspect');
 }
 
+// Bump version query params in index.html to bust aggressive browser caches
+html = html.replace(/style\.css\?v=[^"]+/g, 'style.css?v=5.0');
+html = html.replace(/bundle\.js\?v=[^"]+/g, 'bundle.js?v=5.0');
+
 fs.writeFileSync(path.join(baseDir, 'index.html'), html, 'utf8');
 console.log('index.html updated successfully! File size:', html.length, 'bytes');
 
