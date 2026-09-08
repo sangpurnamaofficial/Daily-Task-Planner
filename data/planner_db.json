@@ -24,8 +24,7 @@
       "durationMinutes": 45,
       "actualMinutesSpent": 0,
       "completed": false,
-      "notes": "",
-      "createdAt": "2026-09-07T09:52:19.032Z"
+      "notes": ""
     },
     {
       "id": "task-1788774739039-1",
@@ -64,8 +63,7 @@
       "durationMinutes": 45,
       "actualMinutesSpent": 0,
       "completed": false,
-      "notes": "",
-      "createdAt": "2026-09-07T12:42:31.572Z"
+      "notes": ""
     },
     {
       "id": "task-1788784951578-1",
@@ -193,7 +191,7 @@
       "passwordHash": "ccb4a5b528b705f564e33fee29b1ebc9bb59c86aa9fc1b6de6fa1ac4eb396cc258d7ddf34d3642267cfd5127f89f81f0ae9e30e22a87e3783296da57b2a2794c",
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=DaniaDemo",
       "authProvider": "local",
-      "createdAt": "2026-09-07T09:49:18.461Z"
+      "createdAt": "2026-09-07T09:49:18.461+00:00"
     },
     {
       "id": "user-1788774739015",
@@ -203,15 +201,17 @@
       "passwordHash": "5de858c54ce5ea218deb7a846beabac24032cef28953b2c4941ab186b7887ef5273581c3a5a8d57b84de2edccf1555bba2f047ebd2ed929cf7dce4a2c6d3d959",
       "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
       "authProvider": "local",
-      "createdAt": "2026-09-07T09:52:19.015Z"
+      "createdAt": "2026-09-07T09:52:19.015+00:00"
     },
     {
       "id": "user-g-1788774739039",
       "name": "Google User",
       "email": "google_1788774739038@gmail.com",
+      "salt": "",
+      "passwordHash": "",
       "avatar": "https://lh3.googleusercontent.com/a/sample",
       "authProvider": "google",
-      "createdAt": "2026-09-07T09:52:19.039Z"
+      "createdAt": "2026-09-07T09:52:19.039+00:00"
     },
     {
       "id": "user-1788784951554",
@@ -221,38 +221,48 @@
       "passwordHash": "26e21ccffd0cd2bd8ef47983f4384cf43197418c8115c591afb449938123fac7f36d9f5727960f67c66d8ba2c3ca4dd38763ede308c488d3437c2ab755e755bd",
       "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
       "authProvider": "local",
-      "createdAt": "2026-09-07T12:42:31.554Z"
+      "createdAt": "2026-09-07T12:42:31.554+00:00"
     },
     {
       "id": "user-g-1788784951578",
       "name": "Google User",
       "email": "google_1788784951577@gmail.com",
+      "salt": "",
+      "passwordHash": "",
       "avatar": "https://lh3.googleusercontent.com/a/sample",
       "authProvider": "google",
-      "createdAt": "2026-09-07T12:42:31.578Z"
+      "createdAt": "2026-09-07T12:42:31.578+00:00"
+    },
+    {
+      "id": "user-test-1788834427930",
+      "name": "Ujian Supabase User",
+      "email": "test-1788834427930@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T02:27:07.931+00:00"
     }
   ],
-  "sessions": {
-    "78dd79b408387b40154766033f64122caeba11fdd65c86c5c523263479d54f8e": {
-      "userId": "user-1788774739015",
-      "createdAt": "2026-09-07T09:52:19.024Z",
-      "expiresAt": "2026-10-07T09:52:19.024Z"
+  "sessions": {},
+  "userSettings": {
+    "user-demo": {
+      "userName": "Dania",
+      "dayStartTime": "07:30",
+      "dayEndTime": "23:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 10,
+      "enableSound": true,
+      "language": "ms"
     },
-    "af0de59737ec253c079be0406af0e2797c1c7fc56a5590b36f9526031e0cdd5d": {
-      "userId": "user-g-1788774739039",
-      "createdAt": "2026-09-07T09:52:19.039Z",
-      "expiresAt": "2026-10-07T09:52:19.039Z"
-    },
-    "d2bdeed225e8ad5ceacdaaa4ab26b748f10f12ffb6d5d7c5217c21ae408bb57b": {
-      "userId": "user-1788784951554",
-      "createdAt": "2026-09-07T12:42:31.565Z",
-      "expiresAt": "2026-10-07T12:42:31.565Z"
-    },
-    "53ad17de8fa5af08ae6c4d44881319ef9979308b6b2c1f03eab7e9eea50be631": {
-      "userId": "user-g-1788784951578",
-      "createdAt": "2026-09-07T12:42:31.578Z",
-      "expiresAt": "2026-10-07T12:42:31.578Z"
+    "user-test-1788834427930": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
     }
-  },
-  "userSettings": {}
+  }
 }

@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const supabase = require('./supabaseClient');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'planner_db.json');
@@ -124,6 +125,30 @@ class Database {
   constructor() {
     this.ensureDataDir();
     this.data = this.readDb();
+    this.initSupabaseSync();
+  }
+
+  async initSupabaseSync() {
+    if (!supabase.isConfigured()) return;
+    try {
+      const remote = await supabase.fetchAll();
+      if (remote) {
+        if (remote.users && remote.users.length > 0) {
+          this.data.users = remote.users;
+          this.data.sessions = remote.sessions || {};
+          this.data.tasks = remote.tasks || [];
+          this.data.goals = remote.goals || [];
+          if (remote.settings) this.data.settings = remote.settings;
+          if (remote.userSettings) this.data.userSettings = remote.userSettings;
+          this.writeDb(this.data);
+          console.log('☁️ DailyPulse: Berjaya dimuatkan daripada Supabase Cloud Database!');
+        } else {
+          await supabase.seedFromLocal(this.data);
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase initial sync info:', err.message);
+    }
   }
 
   ensureDataDir() {
@@ -258,6 +283,11 @@ class Database {
     const token = this.createSession(userId);
     this.writeDb(this.data);
 
+    // Sync ke Supabase Cloud
+    supabase.insertUser(newUser);
+    supabase.insertSession(token, this.data.sessions[token]);
+    userStarterTasks.forEach(t => supabase.upsertTask(t));
+
     const { salt: _, passwordHash: __, ...safeUser } = newUser;
     return { user: safeUser, token };
   }
@@ -283,6 +313,9 @@ class Database {
 
     const token = this.createSession(user.id);
     this.writeDb(this.data);
+
+    // Sync ke Supabase Cloud
+    supabase.insertSession(token, this.data.sessions[token]);
 
     const { salt: _, passwordHash: __, ...safeUser } = user;
     return { user: safeUser, token };
@@ -334,6 +367,13 @@ class Database {
     const token = this.createSession(user.id);
     this.writeDb(this.data);
 
+    // Sync ke Supabase Cloud
+    supabase.insertUser(user);
+    supabase.insertSession(token, this.data.sessions[token]);
+    if (typeof userStarterTasks !== 'undefined' && userStarterTasks.length > 0) {
+      userStarterTasks.forEach(t => supabase.upsertTask(t));
+    }
+
     const { salt: _, passwordHash: __, ...safeUser } = user;
     return { user: safeUser, token };
   }
@@ -367,6 +407,7 @@ class Database {
     if (this.data.sessions && this.data.sessions[token]) {
       delete this.data.sessions[token];
       this.writeDb(this.data);
+      supabase.deleteSession(token);
       return true;
     }
     return false;
@@ -408,6 +449,7 @@ class Database {
     if (!this.data.tasks) this.data.tasks = [];
     this.data.tasks.push(newTask);
     this.writeDb(this.data);
+    supabase.upsertTask(newTask);
     return newTask;
   }
 
@@ -425,6 +467,7 @@ class Database {
       updatedAt: new Date().toISOString()
     };
     this.writeDb(this.data);
+    supabase.upsertTask(this.data.tasks[idx]);
     return this.data.tasks[idx];
   }
 
@@ -437,6 +480,7 @@ class Database {
     });
     if (this.data.tasks.length !== initialLen) {
       this.writeDb(this.data);
+      supabase.deleteTask(id);
       return true;
     }
     return false;
@@ -454,6 +498,7 @@ class Database {
     }));
     this.data.tasks = [...otherUsersTasks, ...formatted];
     this.writeDb(this.data);
+    formatted.forEach(t => supabase.upsertTask(t));
     return formatted;
   }
 
@@ -493,6 +538,7 @@ class Database {
     if (!this.data.goals) this.data.goals = [];
     this.data.goals.push(newGoal);
     this.writeDb(this.data);
+    supabase.upsertGoal(newGoal);
     return newGoal;
   }
 
@@ -510,6 +556,7 @@ class Database {
       updatedAt: new Date().toISOString()
     };
     this.writeDb(this.data);
+    supabase.upsertGoal(this.data.goals[idx]);
     return this.data.goals[idx];
   }
 
@@ -522,6 +569,7 @@ class Database {
     });
     if (this.data.goals.length !== initialLen) {
       this.writeDb(this.data);
+      supabase.deleteGoal(id);
       return true;
     }
     return false;
@@ -546,6 +594,7 @@ class Database {
       this.data.userSettings[ownerId] = { ...this.getSettings(ownerId), ...updates };
     }
     this.writeDb(this.data);
+    supabase.upsertSettings(ownerId, this.getSettings(ownerId));
     return this.getSettings(ownerId);
   }
 
