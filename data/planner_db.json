@@ -129,6 +129,46 @@
       "actualMinutesSpent": 0,
       "completed": false,
       "notes": "Lari anak 3km di taman atau lompat tali di rumah"
+    },
+    {
+      "id": "task-1788836945845-1",
+      "userId": "user-1788836945836",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788836945910",
+      "userId": "user-1788836945836",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "",
+      "createdAt": "2026-09-08T03:09:05.910Z"
+    },
+    {
+      "id": "task-1788836945924-1",
+      "userId": "user-g-1788836945923",
+      "title": "Sediakan Jadual Tugasan Hari Ini",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:45",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Log masuk melalui Google disahkan!"
     }
   ],
   "goals": [
@@ -242,9 +282,38 @@
       "avatar": "https://example.com/avatar.png",
       "authProvider": "local",
       "createdAt": "2026-09-08T02:27:07.931+00:00"
+    },
+    {
+      "id": "user-1788836945836",
+      "name": "Ahmad Test",
+      "email": "user_1788836945738@example.com",
+      "salt": "0bddf920fcbcdfbbbec22c1d8fda0c14",
+      "passwordHash": "189b7f2b511fcee2a8fe02d28f8166776d6e060033af065f4acf9e14db896e549250297e12d76de93a8922bf5f33d7c18f447fdc32b2c76429277ecf16a0426e",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T03:09:05.837Z"
+    },
+    {
+      "id": "user-g-1788836945923",
+      "name": "Google User",
+      "email": "google_1788836945922@gmail.com",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T03:09:05.923Z"
     }
   ],
-  "sessions": {},
+  "sessions": {
+    "6a85cba6958a1709b58dfb08b7b2ce8ead9b15ecfe5db02e79db1c0aafd9fddd": {
+      "userId": "user-1788836945836",
+      "createdAt": "2026-09-08T03:09:05.898Z",
+      "expiresAt": "2026-10-08T03:09:05.898Z"
+    },
+    "e5dfc552f28c65a925ee59c345a11e5f43b7420c79afa1493b444eae689854d2": {
+      "userId": "user-g-1788836945923",
+      "createdAt": "2026-09-08T03:09:05.924Z",
+      "expiresAt": "2026-10-08T03:09:05.924Z"
+    }
+  },
   "userSettings": {
     "user-demo": {
       "userName": "Dania",

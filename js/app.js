@@ -1864,14 +1864,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '47398644341-kaft2lql4e1ecaiinc9lm69bq0cnmtri.apps.googleusercontent.com';
+  window.GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
+
   async function handleGoogleLoginClick() {
     const t = (k) => window.I18N ? window.I18N.t(k) : k;
 
-    // Jika GIS client telah dikonfigurasi dengan Client ID
-    if (window.google && window.google.accounts && window.google.accounts.id && window.GOOGLE_CLIENT_ID) {
+    // 1. Cuba Google Identity Services OAuth 2.0 Popup (Membuka tetingkap rasmi Google akaun)
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              try {
+                // Ambil profil pengguna Google rasmi (nama, emel, avatar)
+                const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                const googleProfile = await userRes.json();
+                if (googleProfile && googleProfile.email) {
+                  await window.Storage.loginWithGoogle({
+                    email: googleProfile.email,
+                    name: googleProfile.name || googleProfile.given_name || googleProfile.email.split('@')[0],
+                    avatar: googleProfile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(googleProfile.name || 'Google')}`
+                  });
+
+                  showToast(t('loginSuccessMsg') || 'Log masuk Google berjaya! 🎉', 'success');
+                  playAudioChime('complete');
+                  triggerHaptic([30, 40, 50]);
+                  closeAuthModal();
+
+                  tasks = window.Storage.getTasks();
+                  goals = window.Storage.getGoals();
+                  settings = window.Storage.getSettings();
+                  renderAll();
+                  return;
+                }
+              } catch (fetchErr) {
+                console.warn('Ralat fetch Google UserInfo:', fetchErr);
+                showAuthAlert(fetchErr.message || 'Ralat mendapatkan maklumat profil Google.');
+              }
+            } else if (tokenResponse && tokenResponse.error) {
+              console.warn('Token response error:', tokenResponse.error);
+              if (tokenResponse.error !== 'popup_closed_by_user') {
+                showAuthAlert(`Google Auth: ${tokenResponse.error}`);
+              }
+            }
+          }
+        });
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (err) {
+        console.warn('Google oauth2 TokenClient error:', err);
+      }
+    }
+
+    // 2. Cuba GIS ID Token (One Tap)
+    if (window.google && window.google.accounts && window.google.accounts.id) {
       try {
         window.google.accounts.id.initialize({
-          client_id: window.GOOGLE_CLIENT_ID,
+          client_id: GOOGLE_CLIENT_ID,
           callback: async (response) => {
             if (response.credential) {
               try {
@@ -1891,17 +1945,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.google.accounts.id.prompt();
         return;
       } catch (e) {
-        console.warn('GIS error, using fallback:', e);
+        console.warn('GIS ID token error:', e);
       }
     }
 
-    // Kotak dialog mesra pengguna untuk sambungan Google
-    const defaultEmail = authInputEmail.value.trim() || 'user.google@gmail.com';
+    // 3. Sandaran Mesra Pengguna sekiranya Google script belum sedia
+    const defaultEmail = authInputEmail ? authInputEmail.value.trim() : '';
+    const isEn = window.I18N && window.I18N.getLanguage() === 'en';
     const googleEmail = prompt(
-      window.I18N && window.I18N.getLanguage() === 'en'
+      isEn
         ? 'Sign In with Google\nEnter your Google Account Email to continue:'
         : 'Log Masuk Melalui Google\nMasukkan alamat emel akaun Google anda untuk meneruskan:',
-      defaultEmail
+      defaultEmail || 'anda@gmail.com'
     );
 
     if (!googleEmail) return;
