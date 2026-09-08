@@ -339,8 +339,28 @@ function generateTaskSuggestions(task) {
   return suggestions;
 }
 
+const PRAYER_DEFAULTS = [
+  { keywords: ['subuh', 'fajr'], time: '05:55', name: 'Solat Subuh' },
+  { keywords: ['zohor', 'dhuhr', 'tengah hari'], time: '13:20', name: 'Solat Zohor' },
+  { keywords: ['asar', 'asr'], time: '16:35', name: 'Solat Asar' },
+  { keywords: ['maghrib', 'magrib'], time: '19:25', name: 'Solat Maghrib' },
+  { keywords: ['isya', 'isyak', 'isha'], time: '20:45', name: 'Solat Isya\'' }
+];
+
+function detectPrayerTime(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  for (const p of PRAYER_DEFAULTS) {
+    if (p.keywords.some(kw => lower.includes(kw))) {
+      return p.time;
+    }
+  }
+  return null;
+}
+
 /**
  * Menyusun jadual berperingkat pintar tanpa pertindihan (Smart Collision-Free Cascade)
+ * Menjamin penguncian waktu tetap (Fixed Anchor / Waktu Solat) dengan ketepatan 100%
  */
 function scheduleTasks(tasks, options = {}) {
   const {
@@ -352,14 +372,52 @@ function scheduleTasks(tasks, options = {}) {
     applySuggestions = false
   } = options;
 
-  let currentMins = TimeEngine.timeToMinutes(startTime);
-  const endOfDayMins = TimeEngine.timeToMinutes(endTime);
+  // 1. Kenal pasti waktu tetap & waktu solat rasmi bagi setiap tugasan
+  let orderedTasks = tasks.map(t => {
+    let fixedTime = t.fixedTime || null;
+    const lowerTitle = (t.title || '').toLowerCase();
 
-  // Jika mod 'deep_work', susun tugasan berkeutamaan tinggi dan kategori 'Kerja' di waktu pagi
-  let orderedTasks = [...tasks];
+    // Auto-detect atau betulkan waktu solat jika tajuk menyebut solat tetapi fixedTime tiada atau tidak tepat
+    const detectedPrayer = detectPrayerTime(t.title);
+    if (detectedPrayer) {
+      // Jika tiada fixedTime, atau fixedTime berada di luar waktu solat yang munasabah
+      if (!fixedTime) {
+        fixedTime = detectedPrayer;
+      } else {
+        const currentFixedMins = TimeEngine.timeToMinutes(fixedTime);
+        // Subuh tidak patut waktu petang/siang (cth: > 07:00 pagi)
+        if (lowerTitle.includes('subuh') && currentFixedMins > 420) {
+          fixedTime = detectedPrayer;
+        }
+        // Zohor tidak patut waktu pagi (cth: < 12:00 tengah hari)
+        if (lowerTitle.includes('zohor') && currentFixedMins < 720) {
+          fixedTime = detectedPrayer;
+        }
+      }
+    }
+
+    return {
+      ...t,
+      fixedTime,
+      isFixedAnchor: Boolean(fixedTime)
+    };
+  });
+
+  // 2. Susun tugasan: pastikan tugasan dengan fixedTime tersusun mengikut urutan masa yang betul
+  orderedTasks.sort((a, b) => {
+    if (a.fixedTime && b.fixedTime) {
+      return TimeEngine.timeToMinutes(a.fixedTime) - TimeEngine.timeToMinutes(b.fixedTime);
+    }
+    return 0;
+  });
+
+  // Jika mod 'deep_work', susun tugasan berkeutamaan tinggi di bahagian pagi
   if (pacing === 'deep_work') {
     orderedTasks.sort((a, b) => {
-      if (a.isFixedAnchor !== b.isFixedAnchor) return a.isFixedAnchor ? -1 : 1;
+      if (a.isFixedAnchor && b.isFixedAnchor) {
+        return TimeEngine.timeToMinutes(a.fixedTime) - TimeEngine.timeToMinutes(b.fixedTime);
+      }
+      if (a.isFixedAnchor !== b.isFixedAnchor) return 0;
       const prioScore = { 'Tinggi': 3, 'Sederhana': 2, 'Rendah': 1 };
       const scoreA = (prioScore[a.priority] || 1) + (a.category === 'Kerja' ? 1 : 0);
       const scoreB = (prioScore[b.priority] || 1) + (b.category === 'Kerja' ? 1 : 0);
@@ -367,6 +425,22 @@ function scheduleTasks(tasks, options = {}) {
     });
   }
 
+  // 3. Tentukan waktu mula jadual keseluruhan
+  // Jika ada tugasan tetap sebelum startTime (cth: Subuh pada 05:55, sedangkan startTime 09:00),
+  // mulakan jadual dari waktu tetap terawal tersebut!
+  let currentMins = TimeEngine.timeToMinutes(startTime);
+  const fixedMinsList = orderedTasks
+    .filter(t => t.fixedTime)
+    .map(t => TimeEngine.timeToMinutes(t.fixedTime));
+
+  if (fixedMinsList.length > 0) {
+    const minFixed = Math.min(...fixedMinsList);
+    if (minFixed < currentMins) {
+      currentMins = minFixed;
+    }
+  }
+
+  const endOfDayMins = TimeEngine.timeToMinutes(endTime);
   const scheduledItems = [];
   let totalSavedMinutes = 0;
   let hasInsertedLunch = false;
@@ -375,7 +449,7 @@ function scheduleTasks(tasks, options = {}) {
     const item = orderedTasks[i];
     const suggestions = generateTaskSuggestions(item);
 
-    let effectiveDuration = item.durationMinutes;
+    let effectiveDuration = item.durationMinutes || 30;
     let appliedSuggestion = null;
 
     // Guna cadangan pengurangan masa jika diaktifkan atau dipersetujui
@@ -409,16 +483,20 @@ function scheduleTasks(tasks, options = {}) {
       hasInsertedLunch = true;
     }
 
-    // Jika item mempunyai waktu tetap (Fixed Anchor), laraskan waktu mula kepadanya
-    if (item.isFixedAnchor && item.fixedTime) {
+    // PENGUNCIAN WAKTU TETAP (FIXED ANCHOR):
+    // Jika tugasan mempunyai fixedTime (cth: Solat Subuh 05:55, Solat Zohor 13:20, Meeting 14:00),
+    // waktu mula tugasan ini WAJIB DIKUNCI TEPAT pada waktu tersebut!
+    let taskStartMins;
+    if (item.fixedTime) {
       const anchorMins = TimeEngine.timeToMinutes(item.fixedTime);
-      if (anchorMins >= currentMins) {
-        currentMins = anchorMins;
-      }
+      taskStartMins = anchorMins;
+      currentMins = anchorMins;
+    } else {
+      taskStartMins = currentMins;
     }
 
-    const taskStart = TimeEngine.minutesToTime(currentMins);
-    const taskEndMins = currentMins + effectiveDuration;
+    const taskStart = TimeEngine.minutesToTime(taskStartMins);
+    const taskEndMins = taskStartMins + effectiveDuration;
     const taskEnd = TimeEngine.minutesToTime(taskEndMins);
 
     scheduledItems.push({
@@ -430,11 +508,12 @@ function scheduleTasks(tasks, options = {}) {
       appliedSuggestion: appliedSuggestion
     });
 
-    // Tambah masa tamat + selang rehat pintar
+    // Kemaskini masa penamat
     currentMins = taskEndMins;
 
     // Selang rehat antara tugasan (Buffer & Rehat Pintar)
     if (i < orderedTasks.length - 1) {
+      const nextItem = orderedTasks[i + 1];
       let restTime = bufferMinutes || 0;
       if (includeBreaks) {
         if (pacing === 'pomodoro' && effectiveDuration >= 45) {
@@ -444,7 +523,8 @@ function scheduleTasks(tasks, options = {}) {
         }
       }
 
-      if (restTime > 0) {
+      // Jika tugasan seterusnya bukan tugasan fixedTime, anjakkan buffer rehat
+      if (!nextItem.fixedTime && restTime > 0) {
         currentMins += restTime;
       }
     }
@@ -536,6 +616,7 @@ ARAHAN KRITIKAL & WAJIB:
 2. JAMINAN 100% TUGASAN DILIPUTI (tasks): Kemas kini senarai tugasan agar mencerminkan arahan pengguna. PASTIKAN SETIAP TUGASAN yang dibincangkan (termasuk senaman, kerja, solat, makan, rehat) WAJIB wujud sebagai objek tugasan dengan durasi dan waktu yang tepat! JANGAN TINGGALKAN mana-mana aktiviti.
 3. KEKALKAN KONTEKS: Jangan padam tugasan sedia ada kecuali jika pengguna secara jelas meminta untuk membuang atau menggantikannya.
 4. CADANGAN PENJIMATAN MASA: Sertakan cadangan pengurangan masa (suggestion) dan nilai penjimatan (suggestedReductionMinutes) jika ada.
+5. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT (fixedTime): Jika pengguna meminta waktu solat (Subuh, Zohor, Asar, Maghrib, Isya') atau sebarang waktu tetap (cth: "meeting 2 petang", "anjak ke 5:30 petang"), anda WAJIB mengisi 'fixedTime' dalam format 24-jam "HH:MM" (contoh tepat waktu KL: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45"). JANGAN sesekali letak null jika waktu tersebut adalah waktu solat atau waktu tetap yang diminta!
 
 Sila pulangkan HANYA JSON mengikut skema berikut:
 {
@@ -546,7 +627,7 @@ Sila pulangkan HANYA JSON mengikut skema berikut:
       "category": "Kerja",
       "priority": "Tinggi",
       "durationMinutes": 45,
-      "fixedTime": null,
+      "fixedTime": "HH:MM atau null",
       "suggestion": "Tip penjimatan masa jika ada",
       "suggestedReductionMinutes": 0
     }
@@ -571,7 +652,7 @@ KONFIGURASI:
 
 ARAHAN KRITIKAL & WAJIB:
 1. JAMINAN 100% TUGASAN DILIPUTI: Setiap satu aktiviti atau tugasan yang disebut oleh pengguna (termasuk senaman, solat, makan, mesyuarat, kerja, rehat) WAJIB dijana sebagai satu objek dalam senarai 'tasks'. JANGAN TINGGALKAN walau satu pun aktiviti tanpa tugasan dan masa!
-2. Jika ada waktu khusus disebut (cth: "meeting pukul 2 petang", "solat asar 4:50", "kul 10 pagi", "10 sampai 12"), set fixedTime (format 24-jam "HH:MM", cth: "14:00"). Jika tiada, set fixedTime: null.
+2. PENGUNCIAN WAKTU TETAP & WAKTU SOLAT: Jika ada waktu khusus disebut atau waktu solat (cth: Subuh "05:55", Zohor "13:20", Asar "16:35", Maghrib "19:25", Isya' "20:45", atau meeting "14:00"), set 'fixedTime' dalam format 24-jam "HH:MM". Jika aktiviti bebas masa, set fixedTime: null.
 3. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
 4. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
 5. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".

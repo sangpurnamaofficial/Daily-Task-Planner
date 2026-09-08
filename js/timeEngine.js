@@ -5,17 +5,36 @@
 
 const TimeEngine = {
   /**
-   * Menukar format masa "HH:MM" (24-jam) kepada jumlah minit dari 00:00
-   * @param {string} timeStr - Cth: "08:30", "14:15"
-   * @returns {number} Minit dari tengah malam
+   * Menukar format masa "HH:MM" (24-jam), "HH:MM AM/PM", atau "HH.MM" kepada jumlah minit dari 00:00
+   * Menyokong 24-jam ("13:20", "05:55"), 12-jam ("1:20 PM", "5:55 AM"), dan waktu Melayu ("1.20 petang", "7:25 malam")
+   * @param {string|number} timeStr 
+   * @returns {number} Minit dari tengah malam (0 - 1439)
    */
   timeToMinutes(timeStr) {
-    if (!timeStr || typeof timeStr !== 'string') return 0;
-    const parts = timeStr.split(':');
-    if (parts.length < 2) return 0;
-    const hours = parseInt(parts[0], 10) || 0;
+    if (timeStr === null || timeStr === undefined) return 0;
+    if (typeof timeStr === 'number') return Math.floor(timeStr) % 1440;
+    const str = String(timeStr).trim().toLowerCase();
+    if (!str) return 0;
+
+    const isPM = str.includes('pm') || str.includes('petang') || str.includes('malam') || str.includes('tengah hari');
+    const isAM = str.includes('am') || str.includes('pagi') || str.includes('subuh');
+
+    const clean = str.replace(/[^\d:.]/g, '').replace('.', ':');
+    const parts = clean.split(':');
+    if (parts.length < 2) {
+      let singleH = parseInt(parts[0], 10) || 0;
+      if (isPM && singleH < 12) singleH += 12;
+      if (isAM && singleH === 12) singleH = 0;
+      return (singleH * 60) % 1440;
+    }
+
+    let hours = parseInt(parts[0], 10) || 0;
     const minutes = parseInt(parts[1], 10) || 0;
-    return (hours * 60) + minutes;
+
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+
+    return ((hours * 60) + minutes) % 1440;
   },
 
   /**

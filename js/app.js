@@ -2413,19 +2413,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const buffer = 10;
     let currentMins = window.TimeEngine.timeToMinutes(startTime);
 
+    // Semak jika ada fixedTime terawal sebelum startTime (cth: Subuh 05:55)
+    const fixedMinsList = currentAiScheduleResult.scheduledTasks
+      .filter(t => t.fixedTime)
+      .map(t => window.TimeEngine.timeToMinutes(t.fixedTime));
+    if (fixedMinsList.length > 0) {
+      const minFixed = Math.min(...fixedMinsList);
+      if (minFixed < currentMins) currentMins = minFixed;
+    }
+
     currentAiScheduleResult.scheduledTasks = currentAiScheduleResult.scheduledTasks.map((t, idx) => {
-      if (t.isFixedAnchor && t.fixedTime) {
+      let taskStartMins;
+      if (t.fixedTime) {
         const anchorMins = window.TimeEngine.timeToMinutes(t.fixedTime);
-        if (anchorMins >= currentMins) currentMins = anchorMins;
+        taskStartMins = anchorMins;
+        currentMins = anchorMins;
+      } else {
+        taskStartMins = currentMins;
       }
 
-      const sTime = window.TimeEngine.minutesToTime(currentMins);
-      const eMins = currentMins + t.durationMinutes;
+      const sTime = window.TimeEngine.minutesToTime(taskStartMins);
+      const eMins = taskStartMins + t.durationMinutes;
       const eTime = window.TimeEngine.minutesToTime(eMins);
 
       currentMins = eMins;
       if (idx < currentAiScheduleResult.scheduledTasks.length - 1) {
-        currentMins += buffer;
+        const nextTask = currentAiScheduleResult.scheduledTasks[idx + 1];
+        if (!nextTask.fixedTime) {
+          currentMins += buffer;
+        }
       }
 
       return {
