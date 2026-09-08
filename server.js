@@ -279,12 +279,22 @@ const server = http.createServer(async (req, res) => {
         return sendJSON(res, 200, { success: true, message: 'Pangkalan data telah dipulihkan', data: resetData });
       }
 
-      // 7. AI Smart Schedule & Optimization API
+      // 7. AI Status & Smart Schedule APIs
+      if (pathname === '/api/ai/status' && req.method === 'GET') {
+        const hasServerKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 10);
+        return sendJSON(res, 200, {
+          success: true,
+          hasServerKey,
+          engine: hasServerKey ? 'Google Gemini AI (Neural LLM)' : 'Heuristik Pintar Tempatan (Offline Mode)'
+        });
+      }
+
       if (pathname === '/api/ai/schedule' && req.method === 'POST') {
         const body = await parseBody(req);
         if (!body.rawText || typeof body.rawText !== 'string' || !body.rawText.trim()) {
           return sendJSON(res, 400, { success: false, error: 'Teks tugasan diperlukan untuk penjadualan AI' });
         }
+        const userApiKey = (body.apiKey && typeof body.apiKey === 'string' && body.apiKey.trim()) || process.env.GEMINI_API_KEY || null;
         const scheduleResult = await aiEngine.generateSmartSchedule({
           rawText: body.rawText,
           startTime: body.startTime || '09:00',
@@ -293,7 +303,7 @@ const server = http.createServer(async (req, res) => {
           bufferMinutes: typeof body.bufferMinutes === 'number' ? body.bufferMinutes : 10,
           includeBreaks: body.includeBreaks !== false,
           applySuggestions: Boolean(body.applySuggestions),
-          apiKey: body.apiKey || process.env.GEMINI_API_KEY || null
+          apiKey: userApiKey
         });
         return sendJSON(res, 200, scheduleResult);
       }

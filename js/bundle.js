@@ -3627,12 +3627,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const aiResProjectedEnd = document.getElementById('ai-res-projected-end');
   const aiBoxSavings = document.getElementById('ai-box-savings');
   const aiResTimeSaved = document.getElementById('ai-res-time-saved');
+  const aiResEngine = document.getElementById('ai-res-engine');
   const aiCoachTipText = document.getElementById('ai-coach-tip-text');
   const aiGlobalActions = document.getElementById('ai-global-actions');
   const btnAiOptimizeAll = document.getElementById('btn-ai-optimize-all');
   const aiPreviewTasksList = document.getElementById('ai-preview-tasks-list');
   const btnApplyAiSchedule = document.getElementById('btn-apply-ai-schedule');
   const btnAiBackToInput = document.getElementById('btn-ai-back-to-input');
+
+  // AI Status & Konfigurasi Kunci API Gemini
+  const aiStatusCard = document.getElementById('ai-status-card');
+  const aiStatusDot = document.getElementById('ai-status-dot');
+  const aiStatusLabel = document.getElementById('ai-status-label');
+  const btnToggleKeyConfig = document.getElementById('btn-toggle-key-config');
+  const aiKeyConfigPanel = document.getElementById('ai-key-config-panel');
+  const aiInputApiKey = document.getElementById('ai-input-api-key');
+  const btnSaveAiKey = document.getElementById('btn-save-ai-key');
+  const btnClearAiKey = document.getElementById('btn-clear-ai-key');
+  let hasServerGeminiKey = false;
 
   let currentAiScheduleResult = null;
 
@@ -3641,6 +3653,43 @@ document.addEventListener('DOMContentLoaded', () => {
     study: "- Baca bab 4 buku rujukan (45m)\n- Buat nota ringkas & peta minda (30m)\n- Ulang kaji latihan peperiksaan 1 jam\n- Tonton video tutorial koding (40m)\n- Uji kaji soalan lepas (30m)",
     weekend: "- Jogging kat taman rekreasi 40 minit\n- Sarapan santai bersama keluarga (45m)\n- Basuh kereta dan kemas laman\n- Beli barang dapur kat pasar raya 1 jam\n- Tonton wayang & santai malam"
   };
+
+  async function checkAiStatus() {
+    const localKey = localStorage.getItem('gemini_api_key') || '';
+    if (aiInputApiKey) {
+      aiInputApiKey.value = localKey;
+    }
+    if (btnClearAiKey) {
+      btnClearAiKey.style.display = localKey ? 'inline-block' : 'none';
+    }
+
+    try {
+      const resp = await fetch('/api/ai/status');
+      if (resp.ok) {
+        const data = await resp.json();
+        hasServerGeminiKey = Boolean(data.hasServerKey);
+      }
+    } catch (e) {
+      // Offline fallback
+    }
+
+    const isConnected = hasServerGeminiKey || Boolean(localKey);
+    if (aiStatusCard) {
+      aiStatusCard.classList.toggle('connected', isConnected);
+    }
+    if (aiStatusDot) {
+      aiStatusDot.className = `status-dot ${isConnected ? 'dot-online' : 'dot-offline'}`;
+    }
+    if (aiStatusLabel) {
+      if (hasServerGeminiKey) {
+        aiStatusLabel.innerHTML = '<strong>🟢 Google Gemini AI Aktif (Kunci Server)</strong> — Analisis Penuh';
+      } else if (localKey) {
+        aiStatusLabel.innerHTML = '<strong>🟢 Google Gemini AI Aktif (Kunci Peribadi)</strong> — Analisis Penuh';
+      } else {
+        aiStatusLabel.innerHTML = '<strong>🟡 Mod Tempatan (Offline)</strong> — Klik "API Key" untuk aktifkan AI percuma';
+      }
+    }
+  }
 
   function getRoundedCurrentTime() {
     const now = new Date();
@@ -3664,6 +3713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showAiSection('input');
       }
       modalAi.classList.add('active');
+      checkAiStatus();
       triggerHaptic([20]);
     }
   }
@@ -3694,6 +3744,7 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerHaptic([30]);
 
     try {
+      const userApiKey = localStorage.getItem('gemini_api_key') || undefined;
       const resp = await fetch('/api/ai/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3703,7 +3754,8 @@ document.addEventListener('DOMContentLoaded', () => {
           pacing,
           bufferMinutes: 10,
           includeBreaks: true,
-          applySuggestions
+          applySuggestions,
+          apiKey: userApiKey
         })
       });
 
@@ -3738,6 +3790,18 @@ document.addEventListener('DOMContentLoaded', () => {
         aiResTimeSaved.textContent = `+${summary.totalSavedMinutes}m`;
       } else {
         aiBoxSavings.style.display = 'none';
+      }
+    }
+
+    if (aiResEngine) {
+      if (summary.isGemini) {
+        aiResEngine.textContent = '✨ Gemini AI';
+        aiResEngine.style.color = '#c084fc';
+        aiResEngine.title = 'Dianalisis menggunakan Google Gemini Neural LLM';
+      } else {
+        aiResEngine.textContent = '⚡ Heuristik';
+        aiResEngine.style.color = '#94a3b8';
+        aiResEngine.title = 'Dianalisis menggunakan Enjin Heuristik Tempatan (Offline)';
       }
     }
 
@@ -3976,6 +4040,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnApplyAiSchedule) {
       btnApplyAiSchedule.addEventListener('click', handleApplyAiSchedule);
+    }
+
+    if (btnToggleKeyConfig) {
+      btnToggleKeyConfig.addEventListener('click', () => {
+        if (!aiKeyConfigPanel) return;
+        const isHidden = aiKeyConfigPanel.style.display === 'none' || !aiKeyConfigPanel.style.display;
+        aiKeyConfigPanel.style.display = isHidden ? 'block' : 'none';
+        if (isHidden && aiInputApiKey) {
+          aiInputApiKey.focus();
+        }
+        triggerHaptic([20]);
+      });
+    }
+
+    if (btnSaveAiKey) {
+      btnSaveAiKey.addEventListener('click', () => {
+        if (!aiInputApiKey) return;
+        const val = aiInputApiKey.value.trim();
+        if (!val) {
+          showToast('Sila masukkan Kunci Gemini API yang sah.', 'warning');
+          return;
+        }
+        localStorage.setItem('gemini_api_key', val);
+        showToast('Kunci Gemini API berjaya disimpan!', 'success');
+        playAudioChime('chime');
+        triggerHaptic([30, 40]);
+        checkAiStatus();
+        if (aiKeyConfigPanel) aiKeyConfigPanel.style.display = 'none';
+      });
+    }
+
+    if (btnClearAiKey) {
+      btnClearAiKey.addEventListener('click', () => {
+        localStorage.removeItem('gemini_api_key');
+        if (aiInputApiKey) aiInputApiKey.value = '';
+        showToast('Kunci API telah dipadamkan.', 'info');
+        triggerHaptic([20]);
+        checkAiStatus();
+        if (aiKeyConfigPanel) aiKeyConfigPanel.style.display = 'none';
+      });
     }
   }
 

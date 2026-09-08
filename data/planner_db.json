@@ -79,56 +79,43 @@
       "notes": "Log masuk melalui Google disahkan!"
     },
     {
-      "id": "task-1",
+      "id": "task-1788842188435",
       "userId": "user-demo",
-      "title": "Semak & Balas Emel & Mesej Klien",
+      "title": "Ujian Database Online",
       "category": "Kerja",
       "priority": "Tinggi",
-      "startTime": "08:30",
-      "endTime": "09:15",
-      "durationMinutes": 45,
-      "actualMinutesSpent": 45,
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMinutes": 90,
+      "actualMinutesSpent": 90,
       "completed": true,
-      "notes": "Keutamaan untuk emel pelabur & kemas kini status mingguan"
+      "notes": "Ujian penyegerakan database"
     },
     {
-      "id": "task-2",
-      "userId": "user-demo",
-      "title": "Siapkan Laporan Analisis Projek & Kod Prototaip",
-      "category": "Kerja",
+      "id": "task-1788842192094-1",
+      "userId": "user-1788842192094",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
       "priority": "Tinggi",
-      "startTime": "09:30",
-      "endTime": "11:45",
-      "durationMinutes": 135,
-      "actualMinutesSpent": 60,
-      "completed": false,
-      "notes": "Fokus mendalam (Deep Work) tanpa gangguan media sosial"
-    },
-    {
-      "id": "task-3",
-      "userId": "user-demo",
-      "title": "Sesi Kajian AI & Pembelajaran Teknologi Baru",
-      "category": "Belajar",
-      "priority": "Sederhana",
-      "startTime": "14:00",
-      "endTime": "15:15",
-      "durationMinutes": 75,
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
       "actualMinutesSpent": 0,
       "completed": false,
-      "notes": "Kaji dokumentasi model terkini & buat catatan ringkas"
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
     },
     {
-      "id": "task-4",
-      "userId": "user-demo",
-      "title": "Senaman Kardio Ringan & Regangan Badan",
-      "category": "Kesihatan",
-      "priority": "Sederhana",
-      "startTime": "17:30",
-      "endTime": "18:15",
+      "id": "task-1788842192114",
+      "userId": "user-1788842192094",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
       "durationMinutes": 45,
       "actualMinutesSpent": 0,
       "completed": false,
-      "notes": "Lari anak 3km di taman atau lompat tali di rumah"
+      "notes": ""
     },
     {
       "id": "task-1788836945845-1",
@@ -154,12 +141,389 @@
       "durationMinutes": 45,
       "actualMinutesSpent": 0,
       "completed": false,
-      "notes": "",
-      "createdAt": "2026-09-08T03:09:05.910Z"
+      "notes": ""
     },
     {
-      "id": "task-1788836945924-1",
-      "userId": "user-g-1788836945923",
+      "id": "task-1788837953394-1",
+      "userId": "user-1788837953394",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788837953418",
+      "userId": "user-1788837953394",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": ""
+    },
+    {
+      "id": "task-4",
+      "userId": "user-demo",
+      "title": "Senaman Kardio Ringan & Regangan Badan",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "17:30",
+      "endTime": "18:15",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Lari anak 3km di taman atau lompat tali di rumah"
+    },
+    {
+      "id": "task-1788838597829",
+      "userId": "user-demo",
+      "title": "Siapkan sistem",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "12:00",
+      "endTime": "13:00",
+      "durationMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": ""
+    },
+    {
+      "id": "task-1",
+      "userId": "user-demo",
+      "title": "Semak & Balas Emel & Mesej Klien",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "08:30",
+      "endTime": "09:15",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 45,
+      "completed": true,
+      "notes": "Keutamaan untuk emel pelabur & kemas kini status mingguan"
+    },
+    {
+      "id": "task-3",
+      "userId": "user-demo",
+      "title": "Sesi Kajian AI & Pembelajaran Teknologi Baru",
+      "category": "Belajar",
+      "priority": "Sederhana",
+      "startTime": "14:00",
+      "endTime": "15:15",
+      "durationMinutes": 75,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Kaji dokumentasi model terkini & buat catatan ringkas"
+    },
+    {
+      "id": "task-2",
+      "userId": "user-demo",
+      "title": "Siapkan Laporan Analisis Projek & Kod Prototaip",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:30",
+      "endTime": "11:45",
+      "durationMinutes": 135,
+      "actualMinutesSpent": 60,
+      "completed": false,
+      "notes": "Fokus mendalam (Deep Work) tanpa gangguan media sosial"
+    },
+    {
+      "id": "task-1788841413907",
+      "userId": "user-demo",
+      "title": "Ujian Database Online",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMinutes": 90,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Ujian penyegerakan database"
+    },
+    {
+      "id": "task-1788841413975",
+      "userId": "user-demo",
+      "title": "Jogging",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "10:10",
+      "endTime": "10:40",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788841438255",
+      "userId": "user-demo",
+      "title": "Test",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788841467234",
+      "userId": "user-demo",
+      "title": "Jogging",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "10:10",
+      "endTime": "10:40",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788842188489",
+      "userId": "user-demo",
+      "title": "Siapkan slide pembentangan",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788842188492",
+      "userId": "user-demo",
+      "title": "Jogging",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "10:10",
+      "endTime": "10:40",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788842292865",
+      "userId": "user-demo",
+      "title": "Jogging",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "10:10",
+      "endTime": "10:40",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788842292862",
+      "userId": "user-demo",
+      "title": "Siapkan slide pembentangan",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788842292827",
+      "userId": "user-demo",
+      "title": "Ujian Database Online",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMinutes": 90,
+      "actualMinutesSpent": 90,
+      "completed": true,
+      "notes": "Ujian penyegerakan database"
+    },
+    {
+      "id": "task-1788842292970-1",
+      "userId": "user-1788842292970",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788842292989",
+      "userId": "user-1788842292970",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": ""
+    },
+    {
+      "id": "task-1788842707257",
+      "userId": "user-demo",
+      "title": "Ujian Database Online",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMinutes": 90,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Ujian penyegerakan database"
+    },
+    {
+      "id": "task-1788842707460",
+      "userId": "user-1788842707439",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": ""
+    },
+    {
+      "id": "task-1788842707439-1",
+      "userId": "user-1788842707439",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788842707329",
+      "userId": "user-demo",
+      "title": "Siapkan slide pembentangan",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788843591141",
+      "userId": "user-demo",
+      "title": "Siapkan slide pembentangan",
+      "category": "Kerja",
+      "priority": "Sederhana",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788843591143",
+      "userId": "user-demo",
+      "title": "Jogging",
+      "category": "Kesihatan",
+      "priority": "Sederhana",
+      "startTime": "10:10",
+      "endTime": "10:40",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Dijana oleh Pembantu Jadual Pintar AI"
+    },
+    {
+      "id": "task-1788843590995",
+      "userId": "user-demo",
+      "title": "Ujian Database Online",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMinutes": 90,
+      "actualMinutesSpent": 90,
+      "completed": true,
+      "notes": "Ujian penyegerakan database"
+    },
+    {
+      "id": "task-1788843597052-1",
+      "userId": "user-1788843597052",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788843597079",
+      "userId": "user-1788843597052",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": ""
+    },
+    {
+      "id": "task-1788843946884-1",
+      "userId": "user-1788843946884",
+      "title": "Terokai Ciri DailyPulse & Tetapkan Sasaran Hari Ini",
+      "category": "Peribadi",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "09:30",
+      "durationMinutes": 30,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "Selamat datang ke DailyPulse! Tambah tugas harian anda."
+    },
+    {
+      "id": "task-1788843946906",
+      "userId": "user-1788843946884",
+      "title": "Tugasan Rahsia Pengguna Ahmad",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "startTime": "09:00",
+      "endTime": "10:00",
+      "durationMinutes": 45,
+      "actualMinutesSpent": 0,
+      "completed": false,
+      "notes": "",
+      "createdAt": "2026-09-08T05:05:46.906Z"
+    },
+    {
+      "id": "task-1788843946923-1",
+      "userId": "user-g-1788843946923",
       "title": "Sediakan Jadual Tugasan Hari Ini",
       "category": "Kerja",
       "priority": "Tinggi",
@@ -210,6 +574,97 @@
       "completedToday": false,
       "streakDays": 4,
       "notes": "Bina ciri baharu setiap hari secara konsisten"
+    },
+    {
+      "id": "goal-1788837915022",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788841413934",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788841467211",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788842188471",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788842292846",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788842707300",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
+    },
+    {
+      "id": "goal-1788843591072",
+      "userId": "user-demo",
+      "title": "Belajar Cloud Deployment",
+      "category": "Belajar",
+      "weeklyTargetHours": 5,
+      "daysPerWeek": 5,
+      "allocatedMinutes": 60,
+      "actualMinutesSpent": 0,
+      "completedToday": false,
+      "streakDays": 1,
+      "notes": ""
     }
   ],
   "settings": {
@@ -217,7 +672,7 @@
     "dayStartTime": "07:30",
     "dayEndTime": "23:00",
     "theme": "dark",
-    "defaultBreakMinutes": 10,
+    "defaultBreakMinutes": 15,
     "enableSound": true,
     "language": "ms"
   },
@@ -284,6 +739,26 @@
       "createdAt": "2026-09-08T02:27:07.931+00:00"
     },
     {
+      "id": "user-test-1788834517276",
+      "name": "Ujian Supabase User",
+      "email": "test-1788834517276@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T02:28:37.276+00:00"
+    },
+    {
+      "id": "user-test-1788836928238",
+      "name": "Ujian Supabase User",
+      "email": "test-1788836928238@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T03:08:48.239+00:00"
+    },
+    {
       "id": "user-1788836945836",
       "name": "Ahmad Test",
       "email": "user_1788836945738@example.com",
@@ -291,40 +766,347 @@
       "passwordHash": "189b7f2b511fcee2a8fe02d28f8166776d6e060033af065f4acf9e14db896e549250297e12d76de93a8922bf5f33d7c18f447fdc32b2c76429277ecf16a0426e",
       "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
       "authProvider": "local",
-      "createdAt": "2026-09-08T03:09:05.837Z"
+      "createdAt": "2026-09-08T03:09:05.837+00:00"
     },
     {
       "id": "user-g-1788836945923",
       "name": "Google User",
       "email": "google_1788836945922@gmail.com",
+      "salt": "",
+      "passwordHash": "",
       "avatar": "https://lh3.googleusercontent.com/a/sample",
       "authProvider": "google",
-      "createdAt": "2026-09-08T03:09:05.923Z"
+      "createdAt": "2026-09-08T03:09:05.923+00:00"
+    },
+    {
+      "id": "user-test-1788837890257",
+      "name": "Ujian Supabase User",
+      "email": "test-1788837890257@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T03:24:50.258+00:00"
+    },
+    {
+      "id": "user-g-1788837953428",
+      "name": "Google User",
+      "email": "google_1788837953427@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T03:25:53.428+00:00"
+    },
+    {
+      "id": "user-1788837953394",
+      "name": "Ahmad Test",
+      "email": "user_1788837953384@example.com",
+      "salt": "88ce1f8bf91346b3b4082390b3734eb8",
+      "passwordHash": "a615e6a3112a0f37a553a64a7bdbd02017257a63e3ccf003add7a7c08ff777ec8eb063c7bc2a98baa1d74682877e5f58f6d03efff6db1a74aae368d7e99d9a28",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T03:25:53.394+00:00"
+    },
+    {
+      "id": "user-1788842192094",
+      "name": "Ahmad Test",
+      "email": "user_1788842192083@example.com",
+      "salt": "d05a0b33060e0f01c8562c301d9c2906",
+      "passwordHash": "9c7b2fe6a7e91271ff7bbb3cdea5f54c0ecb869d6e8a8133d535a5aeab823e31caebe458e480feb6e492626609bcc572ece1d7a521be5165b9fd3a68b95492b7",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:36:32.094+00:00"
+    },
+    {
+      "id": "user-g-1788842192121",
+      "name": "Google User",
+      "email": "google_1788842192120@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T04:36:32.121+00:00"
+    },
+    {
+      "id": "user-test-1788842197200",
+      "name": "Ujian Supabase User",
+      "email": "test-1788842197200@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:36:37.2+00:00"
+    },
+    {
+      "id": "user-test-1788842293164",
+      "name": "Ujian Supabase User",
+      "email": "test-1788842293164@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:38:13.164+00:00"
+    },
+    {
+      "id": "user-1788842292970",
+      "name": "Ahmad Test",
+      "email": "user_1788842292964@example.com",
+      "salt": "4550a9885f13d9d148b79ad9d3df25fb",
+      "passwordHash": "96ddd1d808c62e0e4406a8881f30580275edba707055fced66f7a361af1512c3f29ee5685533be3e759814429bee0fd09880529e92f75c967c3f188c46ad9a65",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:38:12.97+00:00"
+    },
+    {
+      "id": "user-g-1788842292997",
+      "name": "Google User",
+      "email": "google_1788842292996@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T04:38:12.997+00:00"
+    },
+    {
+      "id": "user-g-1788837407547",
+      "name": "Danial Hafiz",
+      "email": "danialhafiz.dh1@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLU1m6LYyycGsRjRWB4dtW2LeaEDRUzXFXFQpp7nh4HZ6AO5u-I=s96-c",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T03:16:47.547+00:00"
+    },
+    {
+      "id": "user-g-1788842707469",
+      "name": "Google User",
+      "email": "google_1788842707469@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T04:45:07.469+00:00"
+    },
+    {
+      "id": "user-1788842707439",
+      "name": "Ahmad Test",
+      "email": "user_1788842707432@example.com",
+      "salt": "68f60045e4be5d68ecf5f6eff1a471f0",
+      "passwordHash": "0496efde1b05c556e87281dde8db64e969d677c9c85bf41391617562ee2587eeb67e8509e953cf6f5f2d7805c63346cd077676fe4cb061313edf8edf7a9541e9",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:45:07.439+00:00"
+    },
+    {
+      "id": "user-test-1788842707669",
+      "name": "Ujian Supabase User",
+      "email": "test-1788842707669@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:45:07.669+00:00"
+    },
+    {
+      "id": "user-1788843597052",
+      "name": "Ahmad Test",
+      "email": "user_1788843597039@example.com",
+      "salt": "39e756a840eb6ebe6e3fa31d93dece10",
+      "passwordHash": "c4b96af11d1455569572ced7033b58e4d0e764e2db35a374522e92c4b385e9ecf724eb97f0152c73dd0d8584d7c85e2799a6cc4f64d52fc79423b6ccaeab5c9a",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T04:59:57.052+00:00"
+    },
+    {
+      "id": "user-g-1788843597087",
+      "name": "Google User",
+      "email": "google_1788843597086@gmail.com",
+      "salt": "",
+      "passwordHash": "",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T04:59:57.087+00:00"
+    },
+    {
+      "id": "user-test-1788843693808",
+      "name": "Ujian Supabase User",
+      "email": "test-1788843693808@example.com",
+      "salt": "testsalt",
+      "passwordHash": "testhash",
+      "avatar": "https://example.com/avatar.png",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T05:01:33.808+00:00"
+    },
+    {
+      "id": "user-1788843946884",
+      "name": "Ahmad Test",
+      "email": "user_1788843946876@example.com",
+      "salt": "d955c9d0be573b6ce97ab2636a6b0fb2",
+      "passwordHash": "2771d8ede3feb207570da9f4ade80210baf2f643ebf60a032f95492ff5c9bb9dce9337d61e5b29f24794c7d0d1733b21fff9fd0f06812e444baae54a0db0adca",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ahmad%20Test",
+      "authProvider": "local",
+      "createdAt": "2026-09-08T05:05:46.884Z"
+    },
+    {
+      "id": "user-g-1788843946923",
+      "name": "Google User",
+      "email": "google_1788843946915@gmail.com",
+      "avatar": "https://lh3.googleusercontent.com/a/sample",
+      "authProvider": "google",
+      "createdAt": "2026-09-08T05:05:46.923Z"
     }
   ],
   "sessions": {
-    "6a85cba6958a1709b58dfb08b7b2ce8ead9b15ecfe5db02e79db1c0aafd9fddd": {
-      "userId": "user-1788836945836",
-      "createdAt": "2026-09-08T03:09:05.898Z",
-      "expiresAt": "2026-10-08T03:09:05.898Z"
-    },
     "e5dfc552f28c65a925ee59c345a11e5f43b7420c79afa1493b444eae689854d2": {
       "userId": "user-g-1788836945923",
-      "createdAt": "2026-09-08T03:09:05.924Z",
-      "expiresAt": "2026-10-08T03:09:05.924Z"
+      "createdAt": "2026-09-08T03:09:05.924+00:00",
+      "expiresAt": "2026-10-08T03:09:05.924+00:00"
+    },
+    "d960f54efa2205ff761d95500e223b357fc44a3ff3cda843f1cb9ea98454625c": {
+      "userId": "user-g-1788837407547",
+      "createdAt": "2026-09-08T03:37:55.828+00:00",
+      "expiresAt": "2026-10-08T03:37:55.828+00:00"
+    },
+    "67d3a28f54f129d1f0fa173b974f92462b68e63c1e94e0ee13d08ed6439061cc": {
+      "userId": "user-1788842192094",
+      "createdAt": "2026-09-08T04:36:32.106+00:00",
+      "expiresAt": "2026-10-08T04:36:32.106+00:00"
+    },
+    "761986869ef3fe06a011b4fca3a4b62f9415bb4a367827fd51ac128af3eae554": {
+      "userId": "user-g-1788842192121",
+      "createdAt": "2026-09-08T04:36:32.121+00:00",
+      "expiresAt": "2026-10-08T04:36:32.121+00:00"
+    },
+    "5482445fcb1bed9a60a0c5797d714425c3c693187d81c7d2228e52389fdcf630": {
+      "userId": "user-g-1788842292997",
+      "createdAt": "2026-09-08T04:38:12.997+00:00",
+      "expiresAt": "2026-10-08T04:38:12.997+00:00"
+    },
+    "02d599f39bb4fd0af9535dfc3ffc48a83369b47cdbb03d20328a27f89b338345": {
+      "userId": "user-g-1788837407547",
+      "createdAt": "2026-09-08T04:40:45.754+00:00",
+      "expiresAt": "2026-10-08T04:40:45.754+00:00"
+    },
+    "a0681f3ef2cae3a521c45f78998762163dc0ffdf646636f5f8fc13d78c9c78e5": {
+      "userId": "user-g-1788842707469",
+      "createdAt": "2026-09-08T04:45:07.469+00:00",
+      "expiresAt": "2026-10-08T04:45:07.469+00:00"
+    },
+    "57d3ec09d1794bc587171afb0259a76aab0e0e63bbc7ce0c37c7fb759e2cb98d": {
+      "userId": "user-1788842707439",
+      "createdAt": "2026-09-08T04:45:07.448+00:00",
+      "expiresAt": "2026-10-08T04:45:07.448+00:00"
+    },
+    "830821c44730c1804212c6efa7840a61af7cf81f7df3aa4be28c7d8c20b8f0b3": {
+      "userId": "user-1788843597052",
+      "createdAt": "2026-09-08T04:59:57.065+00:00",
+      "expiresAt": "2026-10-08T04:59:57.065+00:00"
+    },
+    "aac1eda813fac7483c8149a0202cff05d3c99e51d08797c9690d1dd1a69d0e85": {
+      "userId": "user-g-1788843597087",
+      "createdAt": "2026-09-08T04:59:57.087+00:00",
+      "expiresAt": "2026-10-08T04:59:57.087+00:00"
+    },
+    "9c1ace37686d3526adbfabdf38a16a5f2d8a11d9dc91ca98ddee93ee9819ecab": {
+      "userId": "user-1788843597052",
+      "createdAt": "2026-09-08T04:59:57.052+00:00",
+      "expiresAt": "2026-10-08T04:59:57.052+00:00"
+    },
+    "fb9b5c3469797595702707af0a2e4b12edfaf056575d1508fc62aa95d1f8c538": {
+      "userId": "user-1788843946884",
+      "createdAt": "2026-09-08T05:05:46.897Z",
+      "expiresAt": "2026-10-08T05:05:46.897Z"
+    },
+    "a0990534176c825089211e4cc1c2cb56f6f2f0669efcf3b97850c0bc23bf7e3d": {
+      "userId": "user-g-1788843946923",
+      "createdAt": "2026-09-08T05:05:46.923Z",
+      "expiresAt": "2026-10-08T05:05:46.923Z"
     }
   },
   "userSettings": {
+    "user-test-1788834427930": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-test-1788834517276": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-test-1788836928238": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-test-1788837890257": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
     "user-demo": {
+      "userName": "Dania",
+      "dayStartTime": "07:30",
+      "dayEndTime": "23:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-test-1788842197200": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-test-1788842293164": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
+      "language": "ms"
+    },
+    "user-g-1788837407547": {
       "userName": "Dania",
       "dayStartTime": "07:30",
       "dayEndTime": "23:00",
       "theme": "dark",
       "defaultBreakMinutes": 10,
       "enableSound": true,
+      "language": "en"
+    },
+    "user-test-1788842707669": {
+      "userName": "Danial Ujian",
+      "dayStartTime": "08:00",
+      "dayEndTime": "22:00",
+      "theme": "dark",
+      "defaultBreakMinutes": 15,
+      "enableSound": true,
       "language": "ms"
     },
-    "user-test-1788834427930": {
+    "user-test-1788843693808": {
       "userName": "Danial Ujian",
       "dayStartTime": "08:00",
       "dayEndTime": "22:00",

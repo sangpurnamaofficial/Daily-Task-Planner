@@ -201,6 +201,47 @@ runTest('Menerapkan cadangan pengurangan masa mengira penjimatan masa secara din
   assert.strictEqual(result.scheduledTasks[1].durationMinutes, 45);
 });
 
+// 9. Ujian Pemprosesan Teks Perbualan Santai Bahasa Melayu
+runTest('Hurai teks perbualan santai bersambung tanpa line break (pastu, lepastu, then)', () => {
+  const conversationalText = 'esok aku nak jogging 30 minit lepastu meeting penting pukul 2 petang pastu lunch 45m then siapkan slide 1 jam';
+  const tasks = aiEngine.parseRawText(conversationalText);
+  
+  assert.strictEqual(tasks.length, 4);
+  assert.ok(tasks[0].title.toLowerCase().includes('jogging'));
+  assert.strictEqual(tasks[0].durationMinutes, 30);
+  assert.ok(tasks[1].title.toLowerCase().includes('meeting'));
+  assert.strictEqual(tasks[1].fixedTime, '14:00');
+  assert.ok(tasks[2].title.toLowerCase().includes('lunch'));
+  assert.strictEqual(tasks[2].durationMinutes, 45);
+  assert.ok(tasks[3].title.toLowerCase().includes('slide'));
+  assert.strictEqual(tasks[3].durationMinutes, 60);
+});
+
+// 10. Ujian Ekstrak Julat Masa (Time Range)
+runTest('Ekstrak julat masa pukul 10 sampai 12', () => {
+  const range = aiEngine.extractTimeRange('Meeting klien pukul 10 sampai 12 tengah hari');
+  assert.ok(range);
+  assert.strictEqual(range.startTime, '10:00');
+  assert.strictEqual(range.endTime, '12:00');
+  assert.strictEqual(range.durationMinutes, 120);
+});
+
+// 11. Ujian Prioriti Cadangan Gemini AI
+runTest('Cadangan Gemini AI diberi keutamaan tertinggi dalam generateTaskSuggestions', () => {
+  const task = {
+    title: 'Mesyuarat klien',
+    durationMinutes: 60,
+    geminiSuggestion: 'Cadangan AI: Padatkan agenda kepada 30 minit',
+    geminiReduction: 30
+  };
+
+  const suggestions = aiEngine.generateTaskSuggestions(task);
+  assert.ok(suggestions.length > 0);
+  assert.strictEqual(suggestions[0].type, 'gemini_smart_suggestion');
+  assert.strictEqual(suggestions[0].suggestedDuration, 30);
+  assert.strictEqual(suggestions[0].timeSavedMinutes, 30);
+});
+
 console.log(`\n======================================================`);
-console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 8 LULUS 100%!`);
+console.log(`JUMLAH UJIAN AI ENGINE: ${passedTests} / 11 LULUS 100%!`);
 console.log(`======================================================\n`);

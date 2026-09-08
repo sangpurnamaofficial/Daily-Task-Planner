@@ -71,6 +71,43 @@ function extractExplicitDuration(text) {
 }
 
 /**
+ * Ekstrak julat masa dari teks (cth: "pukul 9 sampai 11", "9 to 11am", "10:00 - 12:00")
+ */
+function extractTimeRange(text) {
+  const lower = text.toLowerCase();
+  const rangeMatch = lower.match(/(?:pukul|jam|dari|from)?\s*(\d{1,2})(?::(\d{2}))?\s*(?:pagi|petang|am|pm)?\s*(?:sampai|hingga|to|-)\s*(\d{1,2})(?::(\d{2}))?\s*(pagi|petang|malam|am|pm)?/);
+  if (rangeMatch) {
+    let startH = parseInt(rangeMatch[1], 10);
+    let startM = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : 0;
+    let endH = parseInt(rangeMatch[3], 10);
+    let endM = rangeMatch[4] ? parseInt(rangeMatch[4], 10) : 0;
+    const period = (rangeMatch[5] || '').toLowerCase();
+
+    if (period === 'petang' || period === 'malam' || period === 'pm') {
+      if (endH < 12) endH += 12;
+      if (startH < 12 && startH <= 6) startH += 12;
+    } else if (endH >= 1 && endH <= 6 && startH >= 1 && startH <= 6) {
+      startH += 12;
+      endH += 12;
+    }
+
+    const startMins = (startH * 60) + startM;
+    let endMins = (endH * 60) + endM;
+    if (endMins <= startMins) endMins += 720;
+    const diff = endMins - startMins;
+
+    if (diff > 0 && diff <= 600) {
+      return {
+        startTime: `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`,
+        endTime: `${String(Math.floor(endMins / 60) % 24).padStart(2, '0')}:${String(endMins % 60).padStart(2, '0')}`,
+        durationMinutes: diff
+      };
+    }
+  }
+  return null;
+}
+
+/**
  * Ekstrak waktu tetap / temujanji dari teks (cth: "pukul 2 petang", "pukul 14:00", "2pm", "10:30am")
  */
 function extractFixedTime(text) {
@@ -113,9 +150,9 @@ function extractFixedTime(text) {
 function parseRawText(rawText) {
   if (!rawText || typeof rawText !== 'string') return [];
 
-  // Pisahkan mengikut baris atau pemisah biasa
+  // Pisahkan mengikut baris, semikolon, atau frasa penghubung perbualan santai
   const rawLines = rawText
-    .split(/\r?\n|;|\band then\b|\blepas tu\b|\bkemudian\b/i)
+    .split(/\r?\n|;|\band then\b|\blepas\s*tu\b|\blepastu\b|\bpastu\b|\bkemudian\b|\bselepas\s*itu\b|\bthen\b|\bseterusnya\b|\bdan\s+(?:lepas\s*tu|kemudian|pastu)\b/i)
     .map(line => line.trim())
     .filter(line => line.length > 0);
 
@@ -126,11 +163,14 @@ function parseRawText(rawText) {
     let cleanLine = line.replace(/^[\s\-\*\•\d\.\)\:]+/, '').trim();
     if (cleanLine.length < 2) continue;
 
-    // Ekstrak waktu tetap (anchor) jika ada
-    const fixedTime = extractFixedTime(cleanLine);
+    // Bersihkan awalan perbualan santai (cth: "esok aku nak", "nak buat", "tolong", "kena")
+    cleanLine = cleanLine.replace(/^(?:(?:esok|hari\s+ni)\s+(?:aku\s+|saya\s+)?nak\s+|(?:esok|hari\s+ni)\s+|aku\s+nak\s+|saya\s+nak\s+|nak\s+|kena\s+|tolong\s+|perlu\s+|lepas\s+tu\s+|pastu\s+|kemudian\s+)/i, '').trim();
+    if (cleanLine.length < 2) continue;
 
-    // Ekstrak durasi eksplisit jika ada
-    let duration = extractExplicitDuration(cleanLine);
+    // Semak jika ada julat masa (cth: "pukul 10 sampai 12")
+    const timeRange = extractTimeRange(cleanLine);
+    let fixedTime = timeRange ? timeRange.startTime : extractFixedTime(cleanLine);
+    let duration = timeRange ? timeRange.durationMinutes : extractExplicitDuration(cleanLine);
 
     // Tentukan kategori berasaskan kata kunci
     let detectedCategory = 'Lain-lain';
@@ -168,6 +208,7 @@ function parseRawText(rawText) {
 
     // Bersihkan tajuk tugasan daripada frasa masa teknikal untuk paparan kemas
     let displayTitle = cleanLine
+      .replace(/\b(?:pukul|jam|dari|from)?\s*\d{1,2}(?::\d{2})?\s*(?:pagi|petang|am|pm)?\s*(?:sampai|hingga|to|-)\s*\d{1,2}(?::\d{2})?\s*(?:pagi|petang|malam|am|pm)?/gi, '')
       .replace(/\b(?:selama|dalam|kira-kira|around|for)?\s*\d+\s*(?:j|jam|h|hour|hours|min|minit|mins|m)\b/gi, '')
       .replace(/(?:pukul|jam|at)\s+\d{1,2}(?::\d{2})?\s*(?:pagi|petang|malam|am|pm)?/gi, '')
       .replace(/\(\s*\)/g, '')
@@ -175,9 +216,10 @@ function parseRawText(rawText) {
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    if (!displayTitle) displayTitle = cleanLine;
+    if (!displayTitle || displayTitle.length < 2) displayTitle = cleanLine;
 
     // Huruf pertama besar
+    displayTitle = displayTitle.charAt(0).toUpperCase() + displayTitle.slice(1);
     displayTitle = displayTitle.charAt(0).toUpperCase() + displayTitle.slice(1);
 
     tasks.push({
@@ -203,7 +245,21 @@ function parseRawText(rawText) {
 function generateTaskSuggestions(task) {
   const suggestions = [];
   const dur = task.durationMinutes;
-  const lowerTitle = task.title.toLowerCase();
+  const lowerTitle = (task.title || '').toLowerCase();
+
+  // 0. Cadangan Tersuai daripada Google Gemini AI
+  if (task.geminiSuggestion) {
+    const reduction = parseInt(task.geminiReduction, 10) || 0;
+    const sugDur = reduction > 0 ? Math.max(10, dur - reduction) : dur;
+    suggestions.push({
+      type: 'gemini_smart_suggestion',
+      icon: '✨',
+      title: 'Cadangan Analisis AI Gemini',
+      message: task.geminiSuggestion,
+      suggestedDuration: sugDur,
+      timeSavedMinutes: reduction
+    });
+  }
 
   // 1. Cadangan Pengurangan Masa untuk Komunikasi / Emel / Mesej
   if ((lowerTitle.includes('emel') || lowerTitle.includes('email') || lowerTitle.includes('mesej') || lowerTitle.includes('chat') || lowerTitle.includes('whatsapp')) && dur > 30) {
@@ -439,11 +495,14 @@ function scheduleTasks(tasks, options = {}) {
 async function callGeminiAI(rawText, options = {}, apiKey) {
   if (!apiKey) return null;
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
-    const prompt = `Anda adalah Jurulatih Produktiviti & Penjadual Waktu Pintar DailyPulse.
-Tugas anda adalah menukar senarai tugasan mentah pengguna berikut kepada jadual masa yang tersusun, berperingkat, realistik, dan mencadangkan pengurangan masa sekiranya durasi boleh dioptimumkan:
+  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+  
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      
+      const prompt = `Anda adalah Pakar Pengurusan Masa & Jurulatih Produktiviti Pintar DailyPulse.
+Tugas anda adalah menganalisis nota, perenggan santai, atau senarai tugasan mentah pengguna dan menukarkannya kepada jadual harian yang realistik, berurutan, dan mencadangkan pengurangan masa sekiranya durasi boleh dioptimumkan:
 
 TEKS MENTAH PENGGUNA:
 """
@@ -453,53 +512,78 @@ ${rawText}
 KONFIGURASI:
 - Waktu Mula: ${options.startTime || '09:00'}
 - Waktu Tamat Sasaran: ${options.endTime || '18:00'}
-- Gaya Kerja (Pacing): ${options.pacing || 'balanced'}
-- Masa Rehat: ${options.bufferMinutes || 10} minit
+- Gaya Kerja (Pacing): ${options.pacing || 'balanced'} (deep_work, balanced, atau pomodoro)
+- Masa Rehat Antara Tugasan: ${options.bufferMinutes || 10} minit
 
-Sila pulangkan HANYA JSON mengikut skema berikut tanpa sebarang markdown code fences:
+ARAHAN PINTAR:
+1. Fahami ayat perbualan santai bahasa Melayu atau bahasa pasar (contoh: "esok nak gym lepastu meeting pastu lunch then siapkan slide").
+2. Ekstrak setiap tugasan/aktiviti individu mengikut turutan yang logik.
+3. Jika ada waktu khusus disebut (cth: "meeting pukul 2 petang", "lunch 12:30", "kul 10 pagi", "10 sampai 12"), set fixedTime (format 24-jam "HH:MM", cth: "14:00"). Jika tiada, set fixedTime: null.
+4. Berikan anggaran durasi (durationMinutes) yang realistik dan logik dalam minit.
+5. Klasifikasikan kategori: "Kerja", "Belajar", "Kesihatan", "Peribadi", atau "Lain-lain".
+6. Tentukan tahap keutamaan: "Tinggi", "Sederhana", atau "Rendah".
+7. Berikan cadangan bernas (suggestion) sekiranya tugasan boleh dibuat lebih cepat (Timeboxing / 80-20), dan nyatakan berapa minit boleh dijimatkan (suggestedReductionMinutes). Jika tiada penjimatan, setkan 0.
+8. Berikan nasihat produktiviti ringkas, mesra dan menyemangatkan (productivityTip) dalam Bahasa Melayu.
+
+Sila pulangkan HANYA JSON mengikut skema berikut:
 {
   "tasks": [
     {
-      "title": "Tajuk Tugasan",
-      "category": "Kerja" | "Belajar" | "Kesihatan" | "Peribadi" | "Lain-lain",
-      "priority": "Tinggi" | "Sederhana" | "Rendah",
-      "durationMinutes": 30,
-      "fixedTime": null atau "14:00",
+      "title": "Tajuk Tugasan Kemas",
+      "category": "Kerja",
+      "priority": "Tinggi",
+      "durationMinutes": 45,
+      "fixedTime": null,
       "suggestion": "Tip pengurangan masa atau pengoptimuman jika ada",
-      "suggestedReductionMinutes": 0
+      "suggestedReductionMinutes": 15
     }
   ],
   "productivityTip": "Nasihat produktiviti peribadi ringkas dalam Bahasa Melayu"
 }`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 2048,
-          responseMimeType: "application/json"
-        }
-      })
-    });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 2048,
+            responseMimeType: "application/json"
+          }
+        })
+      });
 
-    if (!response.ok) {
-      console.warn(`Gemini API respons status ${response.status}. Beralih ke enjin sandaran tempatan.`);
-      return null;
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`Gemini model ${model} ralat status ${response.status}:`, errText);
+        continue;
+      }
+
+      const data = await response.json();
+      let candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!candidateText) continue;
+
+      candidateText = candidateText.trim();
+      if (candidateText.startsWith('```')) {
+        candidateText = candidateText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+      }
+      const firstBrace = candidateText.indexOf('{');
+      const lastBrace = candidateText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        candidateText = candidateText.substring(firstBrace, lastBrace + 1);
+      }
+
+      const parsedJson = JSON.parse(candidateText);
+      if (Array.isArray(parsedJson.tasks) && parsedJson.tasks.length > 0) {
+        return parsedJson;
+      }
+    } catch (err) {
+      console.warn(`Gemini model ${model} ralat proses:`, err.message);
     }
-
-    const data = await response.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!candidateText) return null;
-
-    const parsedJson = JSON.parse(candidateText.trim());
-    return parsedJson;
-  } catch (err) {
-    console.warn('Gemini API terganggu. Menggunakan enjin sandaran pintar tempatan:', err.message);
-    return null;
   }
+
+  return null;
 }
 
 /**
@@ -509,10 +593,14 @@ async function generateSmartSchedule({ rawText, startTime = '09:00', endTime = '
   // Cuba gunakan Gemini API terlebih dahulu jika API key wujud
   const geminiKey = apiKey || process.env.GEMINI_API_KEY;
   let parsedTasks = [];
+  let isGeminiUsed = false;
+  let geminiTip = null;
 
   if (geminiKey) {
     const geminiResult = await callGeminiAI(rawText, { startTime, endTime, pacing, bufferMinutes }, geminiKey);
     if (geminiResult && Array.isArray(geminiResult.tasks) && geminiResult.tasks.length > 0) {
+      isGeminiUsed = true;
+      geminiTip = geminiResult.productivityTip || null;
       parsedTasks = geminiResult.tasks.map((t, idx) => ({
         id: `ai-task-${Date.now()}-${idx + 1}`,
         rawTitle: t.title,
@@ -544,6 +632,12 @@ async function generateSmartSchedule({ rawText, startTime = '09:00', endTime = '
     applySuggestions
   });
 
+  scheduledResult.summary.aiEngine = isGeminiUsed ? 'Google Gemini AI (Neural Model)' : 'Heuristik Pintar Tempatan (Offline Mode)';
+  scheduledResult.summary.isGemini = isGeminiUsed;
+  if (isGeminiUsed && geminiTip) {
+    scheduledResult.summary.productivityTip = geminiTip;
+  }
+
   return scheduledResult;
 }
 
@@ -551,7 +645,9 @@ module.exports = {
   parseRawText,
   extractExplicitDuration,
   extractFixedTime,
+  extractTimeRange,
   generateTaskSuggestions,
   scheduleTasks,
-  generateSmartSchedule
+  generateSmartSchedule,
+  callGeminiAI
 };

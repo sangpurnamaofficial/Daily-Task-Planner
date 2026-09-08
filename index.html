@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=5.0">
+  <link rel="stylesheet" href="/css/style.css?v=6.0">
   <!-- Google Identity Services (Sign in with Google) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
@@ -2758,6 +2758,176 @@ body::before {
   transform: translateY(-1px);
 }
 
+/* AI Status & API Key Configuration Card */
+.ai-status-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.ai-status-card.connected {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(15, 23, 42, 0.75);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.08);
+}
+
+.ai-status-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.dot-online {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+.status-dot.dot-offline {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+.btn-config-key-toggle {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-config-key-toggle:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #fff;
+}
+
+.ai-key-config-panel {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.2s ease;
+}
+
+.ai-key-note {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.ai-key-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ai-key-input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(10, 15, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.ai-key-input:focus {
+  border-color: #a855f7;
+  outline: none;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+.btn-save-key {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.btn-save-key:hover {
+  opacity: 0.9;
+}
+
+.btn-clear-key {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-clear-key:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.ai-key-footer-links {
+  margin-top: 8px;
+}
+
+.ai-get-key-link {
+  font-size: 0.72rem;
+  color: #a855f7;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.ai-get-key-link:hover {
+  color: #d8b4fe;
+  text-decoration: underline;
+}
+
+.ai-engine-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #c084fc;
+}
+
   </style>
 </head>
 <body>
@@ -3449,6 +3619,37 @@ body::before {
         <p class="ai-modal-subtitle" id="ai-modal-subtitle">Taip atau tampal senarai tugasan mentah, AI akan susun waktu mula/tamat & beri cadangan penjimatan masa.</p>
       </div>
 
+      <!-- Status Enjin AI & Konfigurasi API Key -->
+      <div class="ai-status-card" id="ai-status-card">
+        <div class="ai-status-main">
+          <div class="ai-status-indicator">
+            <span class="status-dot dot-offline" id="ai-status-dot"></span>
+            <span class="status-label" id="ai-status-label">Memeriksa sambungan AI...</span>
+          </div>
+          <button type="button" class="btn-config-key-toggle" id="btn-toggle-key-config" title="Konfigurasi Kunci API">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-1.5 1.5L10 13l-4 4-2 2 4 4 2-2 4-4 7.5-7.5z"/><circle cx="7.5" cy="16.5" r="1.5"/></svg>
+            <span id="txt-btn-toggle-key">API Key</span>
+          </button>
+        </div>
+        
+        <!-- Panel Input API Key (Boleh Disorok / Dipapar) -->
+        <div class="ai-key-config-panel" id="ai-key-config-panel" style="display: none;">
+          <p class="ai-key-note">
+            ⚡ Gunakan <strong>Google Gemini API</strong> (100% Percuma) untuk membolehkan AI menganalisis perbualan santai bahasa Melayu, mengira masa, dan mencadangkan pengurangan masa bertaraf LLM.
+          </p>
+          <div class="ai-key-input-wrapper">
+            <input type="password" id="ai-input-api-key" class="form-input ai-key-input" placeholder="Tampal Kunci Gemini API (AIzaSy...)" autocomplete="off">
+            <button type="button" class="btn-save-key" id="btn-save-ai-key">Simpan</button>
+            <button type="button" class="btn-clear-key" id="btn-clear-ai-key" style="display: none;">Padam</button>
+          </div>
+          <div class="ai-key-footer-links">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="ai-get-key-link">
+              🔗 Dapatkan Kunci API Percuma dari Google AI Studio ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Bahagian 1: Input Teks Mentah & Pilihan Tetapan AI -->
       <div id="ai-input-section">
         <!-- Template Quick Pills -->
@@ -3517,6 +3718,10 @@ body::before {
           <div class="ai-stat-item highlight-savings" id="ai-box-savings" style="display: none;">
             <div class="ai-stat-lbl" id="lbl-ai-stat-saved">Masa Dijimatkan</div>
             <div class="ai-stat-val" id="ai-res-time-saved">+0m</div>
+          </div>
+          <div class="ai-stat-item" id="ai-box-engine">
+            <div class="ai-stat-lbl" id="lbl-ai-stat-engine">Enjin AI</div>
+            <div class="ai-stat-val ai-engine-badge" id="ai-res-engine">Gemini AI</div>
           </div>
         </div>
 
@@ -3665,7 +3870,7 @@ body::before {
   </div>
 
   <!-- Skrip Enjin Sistem Disatukan (Single High-Performance Production Bundle) -->
-  <script src="/js/bundle.js?v=5.0"></script>
+  <script src="/js/bundle.js?v=6.0"></script>
   <script>
     // Fallback sekiranya bundle.js lambat / terganggu
     if (!window.DailyPulseLoaded && !window.Storage) {
